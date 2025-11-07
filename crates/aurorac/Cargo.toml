@@ -1,0 +1,30 @@
+[package]
+name = "aurorac"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_lexer = { path = "../aurora_lexer" }
+aurora_grammar = { path = "../aurora_grammar" }
+aurora_parser = { path = "../aurora_parser" }
+aurora_ast = { path = "../aurora_ast" }
+aurora_nameres = { path = "../aurora_nameres" }
+aurora_types = { path = "../aurora_types" }
+aurora_effects = { path = "../aurora_effects" }
+aurora_mir = { path = "../aurora_mir" }
+aurora_air = { path = "../aurora_air" }
+aurora_backend = { path = "../aurora_backend" }
+aurora_diagnostics = { path = "../aurora_diagnostics" }
+
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[[bin]]
+name = "aurorac"
+path = "src/main.rs"

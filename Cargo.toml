@@ -1,0 +1,56 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/aurorac",
+    "crates/aurora_lexer",
+    "crates/aurora_grammar",
+    "crates/aurora_parser",
+    "crates/aurora_ast",
+    "crates/aurora_nameres",
+    "crates/aurora_types",
+    "crates/aurora_effects",
+    "crates/aurora_mir",
+    "crates/aurora_air",
+    "crates/aurora_backend",
+    "crates/aurora_interop",
+    "crates/aurora_concurrency",
+    "crates/aurora_optimizer",
+    "crates/aurora_build",
+    "crates/aurora_diagnostics",
+    "crates/aurora_testing",
+    "crates/aurora_security",
+    "crates/aurora_docs",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+authors = ["Aurora Contributors"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/aurora-lang/aurora"
+homepage = "https://auroralang.org"
+
+[workspace.dependencies]
+# Shared dependencies across workspace
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+thiserror = "1.0"
+anyhow = "1.0"
+clap = { version = "4.4", features = ["derive"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"
+
+[profile.dev]
+opt-level = 0
+debug = true
+split-debuginfo = "unpacked"
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 1
+strip = false
+debug = false
+
+[profile.bench]
+inherits = "release"

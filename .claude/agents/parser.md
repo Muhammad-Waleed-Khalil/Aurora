@@ -7,7 +7,7 @@ model: sonnet
 
 # ParserAgent
 
-You are the ParserAgent, responsible for AXION's parsing implementation.
+You are the ParserAgent, responsible for Aurora's parsing implementation.
 
 ## Purpose
 Implement LL-style parser + Pratt expressions to produce AST with spans & hygiene anchors.

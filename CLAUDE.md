@@ -1,13 +1,13 @@
-# AXION Multi-Agent Team Configuration (Claude Code)
+# Aurora Multi-Agent Team Configuration (Claude Code)
 
-Do not dilute or “simplify” this configuration. Every agent exists to isolate responsibility, avoid cross-contamination, and enforce architectural integrity. The Orchestrator has absolute authority. Sub-agents must respond only within their domain. Violation of boundaries is a defect.
+Do not dilute or "simplify" this configuration. Every agent exists to isolate responsibility, avoid cross-contamination, and enforce architectural integrity. The Orchestrator has absolute authority. Sub-agents must respond only within their domain. Violation of boundaries is a defect.
 
 ---
 
 ## Orchestrator (Lead Agent)
 
-**Purpose:**  
-Owns AXION end-to-end. Breaks work into tasks, assigns to agents, reviews outputs, enforces acceptance criteria, merges or rejects work, initiates refactors, and halts development if quality decays.
+**Purpose:**
+Owns Aurora end-to-end. Breaks work into tasks, assigns to agents, reviews outputs, enforces acceptance criteria, merges or rejects work, initiates refactors, and halts development if quality decays.
 
 **Scope / Responsibilities:**  
 - Decompose backlog into agent-sized tasks.  
@@ -33,8 +33,8 @@ Owns AXION end-to-end. Breaks work into tasks, assigns to agents, reviews output
 
 ## 1. LexerAgent
 
-**Purpose:**  
-Design and implement AXION's lexer with strict NFA, UTF-8, XID identifiers, maximal-munch, and unambiguous tokenization.
+**Purpose:**
+Design and implement Aurora's lexer with strict NFA, UTF-8, XID identifiers, maximal-munch, and unambiguous tokenization.
 
 **Scope:**  
 - Token definitions, regexes, operator catalog.  
@@ -56,8 +56,8 @@ Design and implement AXION's lexer with strict NFA, UTF-8, XID identifiers, maxi
 
 ## 2. GrammarAgent
 
-**Purpose:**  
-Define the complete grammar, precedence table, associativity, and CFG rules for AXION.
+**Purpose:**
+Define the complete grammar, precedence table, associativity, and CFG rules for Aurora.
 
 **Scope:**  
 - Operator precedence table.  
@@ -202,40 +202,40 @@ Design and implement MIR (SSA), effect edges, and mid-level optimizations.
 - MIR dumps with spans.  
 - Proven correctness of all MIR passes.  
 
-**Forbidden:**  
-- Assembly-level optimizations, AXIR.  
+**Forbidden:**
+- Assembly-level optimizations, AIR.  
 
 **Failure Trigger:**  
 - MIR pass breaks semantics or determinism.  
 
 ---
 
-## 9. AXIRAgent
+## 9. AIRAgent
 
-**Purpose:**  
-Emit AXIR, apply peephole/scheduling optimizations per CPU profile.
+**Purpose:**
+Emit AIR (Aurora IR), apply peephole/scheduling optimizations per CPU profile.
 
-**Scope:**  
-- NASM-like IR emission.  
-- Peepholes: mov collapse, LEA patterns, branch shortening.  
-- Latency/throughput aware scheduling.  
+**Scope:**
+- NASM-like IR emission.
+- Peepholes: mov collapse, LEA patterns, branch shortening.
+- Latency/throughput aware scheduling.
 
-**Deliverables:**  
-- AXIR that round-trips.  
-- CPU-profiled AXIR patterns.  
+**Deliverables:**
+- AIR that round-trips.
+- CPU-profiled AIR patterns.  
 
 **Forbidden:**  
 - MIR ownership or LLVM code.  
 
-**Failure Trigger:**  
-- AXIR non-determinism across builds.  
+**Failure Trigger:**
+- AIR non-determinism across builds.  
 
 ---
 
 ## 10. BackendAgent
 
-**Purpose:**  
-Bridge MIR/AXIR to actual machine code via LLVM/Cranelift, then link.
+**Purpose:**
+Bridge MIR/AIR to actual machine code via LLVM/Cranelift, then link.
 
 **Scope:**  
 - LLVM, Cranelift pipelines.  
@@ -246,8 +246,8 @@ Bridge MIR/AXIR to actual machine code via LLVM/Cranelift, then link.
 - Reproducible binaries.  
 - Verified symbol maps.  
 
-**Forbidden:**  
-- AXIR peephole logic, optimizer logic.  
+**Forbidden:**
+- AIR peephole logic, optimizer logic.  
 
 **Failure Trigger:**  
 - Non-reproducible builds with fixed seeds.  
@@ -300,8 +300,8 @@ Implement scheduler, goroutines, channels, actors, async/await, and cancellation
 
 ## 13. OptimizerAgent
 
-**Purpose:**  
-Own performance tuning across MIR + AXIR + CPU-profiles.
+**Purpose:**
+Own performance tuning across MIR + AIR + CPU-profiles.
 
 **Scope:**  
 - Micro-arch tuning profiles (Skylake, Zen, etc.).  
@@ -321,11 +321,11 @@ Own performance tuning across MIR + AXIR + CPU-profiles.
 
 ## 14. BuildAgent
 
-**Purpose:**  
-Own the `ax` CLI, workspace management, build profiles, cross-compilation.
+**Purpose:**
+Own the `aurora` CLI, workspace management, build profiles, cross-compilation.
 
-**Scope:**  
-- `ax` verbs: init/add/update/build/run/test/bench/fmt/lint/doc/cross.  
+**Scope:**
+- `aurora` verbs: init/add/update/build/run/test/bench/fmt/lint/doc/cross.  
 - Content-addressed cache and lockfiles.  
 - Target triples and profiles.  
 
@@ -345,10 +345,10 @@ Own the `ax` CLI, workspace management, build profiles, cross-compilation.
 **Purpose:**  
 Provide structured JSON diagnostics, fix-its, LSP, and developer tooling surface.
 
-**Scope:**  
-- JSON diagnostic schema.  
-- LSP: completions, hovers, actions, rename, macro expansion view.  
-- Inline MIR/AXIR previews.  
+**Scope:**
+- JSON diagnostic schema.
+- LSP: completions, hovers, actions, rename, macro expansion view.
+- Inline MIR/AIR previews.  
 
 **Deliverables:**  
 - Developer-grade LSP with zero crashes.  

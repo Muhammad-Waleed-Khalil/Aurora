@@ -15,7 +15,7 @@ Provide structured JSON diagnostics, fix-its, LSP, and developer tooling surface
 ## Scope
 - JSON diagnostic schema
 - LSP: completions, hovers, actions, rename, macro expansion view
-- Inline MIR/AXIR previews
+- Inline MIR/AIR previews
 
 ## Deliverables
 - Developer-grade LSP with zero crashes

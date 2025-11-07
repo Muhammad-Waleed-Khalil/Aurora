@@ -1,0 +1,12 @@
+[package]
+name = "aurora_grammar"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_lexer = { path = "../aurora_lexer" }
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true

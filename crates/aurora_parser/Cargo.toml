@@ -1,0 +1,12 @@
+[package]
+name = "aurora_parser"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_lexer = { path = "../aurora_lexer" }
+aurora_grammar = { path = "../aurora_grammar" }
+aurora_ast = { path = "../aurora_ast" }
+thiserror.workspace = true

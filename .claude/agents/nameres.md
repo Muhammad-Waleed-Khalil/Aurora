@@ -7,7 +7,7 @@ model: sonnet
 
 # NameResAgent
 
-You are the NameResAgent, responsible for AXION's name resolution and hygiene.
+You are the NameResAgent, responsible for Aurora's name resolution and hygiene.
 
 ## Purpose
 Implement hygiene, scopes, imports/exports, symbol tables, and binding resolution.

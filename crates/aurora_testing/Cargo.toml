@@ -1,0 +1,9 @@
+[package]
+name = "aurora_testing"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+proptest = "1.4"

@@ -1,0 +1,612 @@
+[
+  {
+    "name": "Program",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "zeroormore",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "Item"
+            }
+          }
+        ],
+        "description": "Zero or more top-level items"
+      }
+    ],
+    "doc": "Top-level program structure"
+  },
+  {
+    "name": "Item",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "FunctionDecl"
+          }
+        ],
+        "description": "Function declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "TypeDecl"
+          }
+        ],
+        "description": "Type declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "TraitDecl"
+          }
+        ],
+        "description": "Trait declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "ImplDecl"
+          }
+        ],
+        "description": "Implementation declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "ConstDecl"
+          }
+        ],
+        "description": "Constant declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "ModDecl"
+          }
+        ],
+        "description": "Module declaration"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "UseDecl"
+          }
+        ],
+        "description": "Use/import declaration"
+      }
+    ],
+    "doc": "Top-level item (declaration)"
+  },
+  {
+    "name": "FunctionDecl",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "pub"
+            }
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "async"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "fn"
+          },
+          {
+            "type": "terminal",
+            "value": "IDENT"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "GenericParams"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "("
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "ParamList"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": ")"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "group",
+              "symbols": [
+                {
+                  "type": "terminal",
+                  "value": "->"
+                },
+                {
+                  "type": "nonterminal",
+                  "name": "Type"
+                }
+              ]
+            }
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "WhereClause"
+            }
+          },
+          {
+            "type": "nonterminal",
+            "name": "Block"
+          }
+        ],
+        "description": "Function declaration"
+      }
+    ],
+    "doc": "fn foo<T>(x: T) -> T where T: Clone { ... }"
+  },
+  {
+    "name": "TypeDecl",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "pub"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "type"
+          },
+          {
+            "type": "terminal",
+            "value": "IDENT"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "GenericParams"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "="
+          },
+          {
+            "type": "nonterminal",
+            "name": "Type"
+          },
+          {
+            "type": "terminal",
+            "value": ";"
+          }
+        ],
+        "description": "Type alias"
+      }
+    ],
+    "doc": "type MyInt = i64;"
+  },
+  {
+    "name": "TraitDecl",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "pub"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "trait"
+          },
+          {
+            "type": "terminal",
+            "value": "IDENT"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "GenericParams"
+            }
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "WhereClause"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "{"
+          },
+          {
+            "type": "zeroormore",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "TraitItem"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "}"
+          }
+        ],
+        "description": "Trait definition"
+      }
+    ],
+    "doc": "trait Clone { fn clone(&self) -> Self; }"
+  },
+  {
+    "name": "UseDecl",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "pub"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "use"
+          },
+          {
+            "type": "nonterminal",
+            "name": "Path"
+          },
+          {
+            "type": "terminal",
+            "value": ";"
+          }
+        ],
+        "description": "Use/import statement"
+      }
+    ],
+    "doc": "use std::collections::HashMap;"
+  },
+  {
+    "name": "Statement",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "LetStmt"
+          }
+        ],
+        "description": "Let binding"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "ExprStmt"
+          }
+        ],
+        "description": "Expression statement"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "Item"
+          }
+        ],
+        "description": "Item in statement position"
+      }
+    ],
+    "doc": "Statement"
+  },
+  {
+    "name": "LetStmt",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "let"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "terminal",
+              "value": "mut"
+            }
+          },
+          {
+            "type": "nonterminal",
+            "name": "Pattern"
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "group",
+              "symbols": [
+                {
+                  "type": "terminal",
+                  "value": ":"
+                },
+                {
+                  "type": "nonterminal",
+                  "name": "Type"
+                }
+              ]
+            }
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "group",
+              "symbols": [
+                {
+                  "type": "terminal",
+                  "value": "="
+                },
+                {
+                  "type": "nonterminal",
+                  "name": "Expr"
+                }
+              ]
+            }
+          },
+          {
+            "type": "terminal",
+            "value": ";"
+          }
+        ],
+        "description": "Let binding"
+      }
+    ],
+    "doc": "let mut x: i64 = 42;"
+  },
+  {
+    "name": "Block",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "{"
+          },
+          {
+            "type": "zeroormore",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "Statement"
+            }
+          },
+          {
+            "type": "optional",
+            "symbol": {
+              "type": "nonterminal",
+              "name": "Expr"
+            }
+          },
+          {
+            "type": "terminal",
+            "value": "}"
+          }
+        ],
+        "description": "Block expression"
+      }
+    ],
+    "doc": "{ stmt1; stmt2; expr }"
+  },
+  {
+    "name": "Type",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "PrimitiveType"
+          }
+        ],
+        "description": "Primitive type"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "PathType"
+          }
+        ],
+        "description": "Named type"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "TupleType"
+          }
+        ],
+        "description": "Tuple type"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "ArrayType"
+          }
+        ],
+        "description": "Array type"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "FunctionType"
+          }
+        ],
+        "description": "Function type"
+      }
+    ],
+    "doc": "Type expressions"
+  },
+  {
+    "name": "PrimitiveType",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|char|str"
+          }
+        ],
+        "description": "Primitive type keywords"
+      }
+    ],
+    "doc": "Primitive types"
+  },
+  {
+    "name": "Pattern",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "IDENT"
+          }
+        ],
+        "description": "Identifier pattern"
+      },
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "_"
+          }
+        ],
+        "description": "Wildcard pattern"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "TuplePattern"
+          }
+        ],
+        "description": "Tuple pattern"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "StructPattern"
+          }
+        ],
+        "description": "Struct pattern"
+      }
+    ],
+    "doc": "Pattern matching"
+  },
+  {
+    "name": "Expr",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "PrattExpr"
+          }
+        ],
+        "description": "Expression parsed by Pratt parser"
+      }
+    ],
+    "doc": "Expressions use Pratt parsing with precedence table"
+  },
+  {
+    "name": "PrimaryExpr",
+    "productions": [
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "LITERAL"
+          }
+        ],
+        "description": "Literal value"
+      },
+      {
+        "symbols": [
+          {
+            "type": "terminal",
+            "value": "IDENT"
+          }
+        ],
+        "description": "Identifier"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "Block"
+          }
+        ],
+        "description": "Block expression"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "IfExpr"
+          }
+        ],
+        "description": "If expression"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "MatchExpr"
+          }
+        ],
+        "description": "Match expression"
+      },
+      {
+        "symbols": [
+          {
+            "type": "nonterminal",
+            "name": "LoopExpr"
+          }
+        ],
+        "description": "Loop expression"
+      }
+    ],
+    "doc": "Primary expressions"
+  }
+]

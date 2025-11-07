@@ -1,0 +1,10 @@
+[package]
+name = "aurora_optimizer"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_mir = { path = "../aurora_mir" }
+aurora_air = { path = "../aurora_air" }

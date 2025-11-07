@@ -1,0 +1,13 @@
+[package]
+name = "aurora_mir"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_ast = { path = "../aurora_ast" }
+aurora_types = { path = "../aurora_types" }
+aurora_effects = { path = "../aurora_effects" }
+serde.workspace = true
+serde_json.workspace = true
