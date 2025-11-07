@@ -13,10 +13,10 @@
 //!
 //! - `parser`: Core parser implementation
 //! - `decls`: Declaration parsing (functions, types, traits, impls)
-//! - `exprs`: Expression parsing (Pratt parser) - TODO
-//! - `stmts`: Statement parsing - TODO
-//! - `types`: Type parsing - TODO
-//! - `patterns`: Pattern parsing - TODO
+//! - `exprs`: Expression parsing (Pratt parser)
+//! - `stmts`: Statement parsing
+//! - `types`: Type parsing
+//! - `patterns`: Pattern parsing
 //! - `error`: Error types and recovery
 
 #![warn(missing_docs)]
@@ -24,7 +24,11 @@
 
 mod decls;
 mod error;
+mod exprs;
 mod parser;
+mod patterns;
+mod stmts;
+mod types;
 
 pub use error::{ParseError, ParseResult};
 pub use parser::Parser;
