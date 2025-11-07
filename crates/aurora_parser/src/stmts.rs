@@ -13,7 +13,7 @@ use crate::parser::Parser;
 impl Parser {
     /// Parse a statement
     pub(crate) fn parse_stmt(&mut self) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         
         // Check for let binding
         if self.check(&TokenKind::Let) {

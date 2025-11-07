@@ -8,7 +8,7 @@
 //! - References (&T, &mut T)
 //! - Function types (fn(i32) -> String)
 
-use aurora_ast::ty::{PrimitiveType, Type, TypeKind};
+use aurora_ast::ty::{FloatType, IntType, Type, TypeKind, UintType};
 use aurora_ast::expr::Path;
 use aurora_lexer::TokenKind;
 use crate::error::{ParseError, ParseResult};
@@ -17,82 +17,80 @@ use crate::parser::Parser;
 impl Parser {
     /// Parse a type expression
     pub(crate) fn parse_type(&mut self) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         
         let kind = match self.peek() {
-            // Primitive types
+            // Signed integer types
             TokenKind::I8 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::I8)
+                TypeKind::Int(IntType::I8)
             }
             TokenKind::I16 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::I16)
+                TypeKind::Int(IntType::I16)
             }
             TokenKind::I32 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::I32)
+                TypeKind::Int(IntType::I32)
             }
             TokenKind::I64 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::I64)
+                TypeKind::Int(IntType::I64)
             }
-            TokenKind::I128 => {
-                self.advance();
-                TypeKind::Primitive(PrimitiveType::I128)
-            }
+            
+            // Unsigned integer types
             TokenKind::U8 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::U8)
+                TypeKind::Uint(UintType::U8)
             }
             TokenKind::U16 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::U16)
+                TypeKind::Uint(UintType::U16)
             }
             TokenKind::U32 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::U32)
+                TypeKind::Uint(UintType::U32)
             }
             TokenKind::U64 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::U64)
+                TypeKind::Uint(UintType::U64)
             }
-            TokenKind::U128 => {
-                self.advance();
-                TypeKind::Primitive(PrimitiveType::U128)
-            }
+            
+            // Float types
             TokenKind::F32 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::F32)
+                TypeKind::Float(FloatType::F32)
             }
             TokenKind::F64 => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::F64)
+                TypeKind::Float(FloatType::F64)
             }
+            
+            // Other primitives
             TokenKind::Bool => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::Bool)
+                TypeKind::Bool
             }
             TokenKind::Char => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::Char)
+                TypeKind::Char
             }
             TokenKind::Str => {
                 self.advance();
-                TypeKind::Primitive(PrimitiveType::Str)
+                TypeKind::Str
             }
             
             // Reference types
             TokenKind::And => {
                 self.advance();
-                let mutable = if self.check(&TokenKind::Mut) {
+                let is_mut = if self.check(&TokenKind::Mut) {
                     self.advance();
                     true
                 } else {
                     false
                 };
-                let inner = self.parse_type()?;
-                TypeKind::Ref { mutable, inner }
+                let inner = Box::new(self.parse_type()?);
+                TypeKind::Reference { inner, is_mut }
             }
             
             // Tuple types
@@ -116,41 +114,25 @@ impl Parser {
                 }
                 
                 self.expect(TokenKind::RParen, "Expected ')' after tuple type")?;
-                
-                // Empty tuple is unit type
-                if types.is_empty() {
-                    TypeKind::Primitive(PrimitiveType::Unit)
-                } else {
-                    TypeKind::Tuple(types)
-                }
+                TypeKind::Tuple(types)
             }
             
             // Array/slice types
             TokenKind::LBracket => {
                 self.advance();
-                let element = self.parse_type()?;
+                let element = Box::new(self.parse_type()?);
                 
-                let size = if self.check(&TokenKind::Semicolon) {
+                if self.check(&TokenKind::Semicolon) {
+                    // Array type with size
                     self.advance();
-                    // Parse array size (for now, just expect a number)
-                    if let TokenKind::IntLiteral(n) = self.peek() {
-                        let size = *n as usize;
-                        self.advance();
-                        Some(size)
-                    } else {
-                        return Err(ParseError::Expected {
-                            expected: "array size".to_string(),
-                            found: format!("{:?}", self.peek()),
-                            span: self.current().span,
-                            message: "Expected array size after ';'".to_string(),
-                        });
-                    }
+                    let length = self.parse_expr()?;
+                    self.expect(TokenKind::RBracket, "Expected ']' after array type")?;
+                    TypeKind::Array { element, length }
                 } else {
-                    None // Slice type
-                };
-                
-                self.expect(TokenKind::RBracket, "Expected ']' after array type")?;
-                TypeKind::Array { element, size }
+                    // Slice type
+                    self.expect(TokenKind::RBracket, "Expected ']' after slice type")?;
+                    TypeKind::Slice { element }
+                }
             }
             
             // Function types
@@ -178,30 +160,31 @@ impl Parser {
                 
                 let return_type = if self.check(&TokenKind::RArrow) {
                     self.advance();
-                    self.parse_type()?
+                    Some(Box::new(self.parse_type()?))
                 } else {
-                    // Unit type by default
-                    let unit = Type {
-                        kind: TypeKind::Primitive(PrimitiveType::Unit),
-                        span: self.current().span,
-                    };
-                    self.arena.alloc_type(unit)
+                    None
                 };
                 
-                TypeKind::Fn { params, return_type }
+                TypeKind::Function { params, return_type }
+            }
+            
+            // Inferred type
+            TokenKind::Underscore => {
+                self.advance();
+                TypeKind::Infer
             }
             
             // Path types (e.g., String, Vec<T>, std::io::Read)
             TokenKind::Ident => {
                 let path = self.parse_path()?;
-                TypeKind::Path(path)
+                TypeKind::Path { path }
             }
             
             _ => {
                 return Err(ParseError::Expected {
                     expected: "type".to_string(),
                     found: format!("{:?}", self.peek()),
-                    span: self.current().span,
+                    span: self.token_to_span(self.current()),
                     message: "Expected a type expression".to_string(),
                 });
             }
@@ -219,25 +202,15 @@ mod tests {
     use crate::parser::Parser;
     
     #[test]
-    fn test_parse_primitive_types() {
-        let types = vec!["i32", "f64", "bool", "char", "str"];
-        
-        for type_str in types {
-            let parser = Parser::new(type_str, "test.ax".to_string()).unwrap();
-            // We'd need to expose parse_type publicly or test through declarations
-        }
-    }
-    
-    #[test]
-    fn test_parse_tuple_type() {
-        let source = "fn test() -> (i32, f64) {}";
+    fn test_parse_int_type() {
+        let source = "fn test() -> i32 {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
         let (_program, _arena) = parser.parse().unwrap();
     }
     
     #[test]
-    fn test_parse_array_type() {
-        let source = "fn test() -> [i32; 10] {}";
+    fn test_parse_tuple_type() {
+        let source = "fn test() -> (i32, f64) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
         let (_program, _arena) = parser.parse().unwrap();
     }

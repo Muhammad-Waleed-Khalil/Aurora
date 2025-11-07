@@ -42,7 +42,7 @@ impl Parser {
     
     /// Parse expression with precedence climbing
     fn parse_expr_with_precedence(&mut self, min_prec: Precedence) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         
         // Parse prefix/primary expression
         let mut left = self.parse_prefix_expr()?;
@@ -63,17 +63,17 @@ impl Parser {
     
     /// Parse prefix/primary expression
     fn parse_prefix_expr(&mut self) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         
         let kind = match self.peek() {
             // Literals
-            TokenKind::IntLiteral(n) => {
-                let n = *n;
+            TokenKind::IntLiteral => {
+                let n = self.current().lexeme.parse::<i64>().unwrap_or(0);
                 self.advance();
                 ExprKind::Literal(Literal::Int(n))
             }
-            TokenKind::FloatLiteral(f) => {
-                let f = *f;
+            TokenKind::FloatLiteral => {
+                let f = self.current().lexeme.parse::<f64>().unwrap_or(0.0);
                 self.advance();
                 ExprKind::Literal(Literal::Float(f))
             }
@@ -300,7 +300,7 @@ impl Parser {
                 return Err(ParseError::Expected {
                     expected: "expression".to_string(),
                     found: format!("{:?}", self.peek()),
-                    span: self.current().span,
+                    span: self.token_to_span(self.current()),
                     message: "Expected an expression".to_string(),
                 });
             }
@@ -317,7 +317,7 @@ impl Parser {
             | TokenKind::Percent | TokenKind::StarStar
             | TokenKind::EqEq | TokenKind::NotEq
             | TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq
-            | TokenKind::AndAmpersand | TokenKind::OrOr
+            | TokenKind::AndAnd | TokenKind::OrOr
             | TokenKind::And | TokenKind::Or | TokenKind::Caret
             | TokenKind::LtLt | TokenKind::GtGt => {
                 let op = self.token_to_binary_op()?;
@@ -430,7 +430,7 @@ impl Parser {
             TokenKind::Question => Precedence::Propagation,
             TokenKind::DotDot => Precedence::Range,
             TokenKind::OrOr => Precedence::LogicalOr,
-            TokenKind::AndAmpersand => Precedence::LogicalAnd,
+            TokenKind::AndAnd => Precedence::LogicalAnd,
             
             TokenKind::EqEq | TokenKind::NotEq
             | TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq => Precedence::Comparison,
@@ -464,7 +464,7 @@ impl Parser {
             TokenKind::LtEq => Ok(BinaryOp::Le),
             TokenKind::Gt => Ok(BinaryOp::Gt),
             TokenKind::GtEq => Ok(BinaryOp::Ge),
-            TokenKind::AndAmpersand => Ok(BinaryOp::And),
+            TokenKind::AndAnd => Ok(BinaryOp::And),
             TokenKind::OrOr => Ok(BinaryOp::Or),
             TokenKind::And => Ok(BinaryOp::BitAnd),
             TokenKind::Or => Ok(BinaryOp::BitOr),
@@ -485,7 +485,7 @@ impl Parser {
             _ => Err(ParseError::Expected {
                 expected: "binary operator".to_string(),
                 found: format!("{:?}", self.peek()),
-                span: self.current().span,
+                span: self.token_to_span(self.current()),
                 message: "Expected a binary operator".to_string(),
             }),
         }
@@ -503,12 +503,12 @@ impl Parser {
             
             if self.check(&TokenKind::If) {
                 // else if
-                let else_if_expr_id = self.parse_if_expr(self.current().span)?;
+                let else_if_expr_id = self.parse_if_expr(self.token_to_span(self.current()))?;
                 // Wrap in a block
                 let else_if_block = aurora_ast::Block {
                     stmts: vec![],
                     expr: Some(else_if_expr_id),
-                    span: self.previous().span,
+                    span: self.token_to_span(self.previous()),
                 };
                 Some(self.arena.alloc(aurora_ast::nodes::AstNode::Block(else_if_block)))
             } else {
@@ -534,7 +534,7 @@ impl Parser {
         let mut arms = Vec::new();
         
         while !self.check(&TokenKind::RBrace) && !self.is_at_end() {
-            let arm_start = self.current().span;
+            let arm_start = self.token_to_span(self.current());
             let pattern = self.parse_pattern()?;
             
             let guard = if self.check(&TokenKind::If) {
@@ -570,7 +570,7 @@ impl Parser {
         
         if !self.check(&TokenKind::RBrace) {
             loop {
-                let field_start = self.current().span;
+                let field_start = self.token_to_span(self.current());
                 let field_name_token = self.expect(TokenKind::Ident, "Expected field name")?;
                 let field_name = field_name_token.lexeme.clone();
                 
