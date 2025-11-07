@@ -1,22 +1,53 @@
-//! aurora_nameres - Aurora Compiler Agent
+//! Name Resolution for Aurora
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! This crate implements the name resolution phase of the Aurora compiler,
+//! including symbol tables, scope management, hygiene system, module graph
+//! construction, and binding resolution.
+//!
+//! # Architecture
+//!
+//! The name resolution phase consists of several components:
+//!
+//! - **Symbol Table**: Stores all symbols (functions, types, variables, etc.)
+//!   with support for shadowing and visibility rules.
+//!
+//! - **Scope Tree**: Manages the hierarchical structure of scopes (global,
+//!   module, function, block, loop, match arm) and provides scope traversal.
+//!
+//! - **Hygiene System**: Prevents accidental variable capture in macro expansion
+//!   by assigning unique hygiene IDs to identifiers based on their lexical context.
+//!
+//! - **Module Graph**: (TODO) Builds the dependency graph of modules and detects cycles.
+//!
+//! - **Name Resolver**: (TODO) Performs the actual name resolution, binding
+//!   identifier uses to their definitions while respecting hygiene and visibility.
+//!
+//! # Example
+//!
+//! ```rust,ignore
+//! use aurora_nameres::{SymbolTable, ScopeTree, HygieneContext};
+//!
+//! let mut symbols = SymbolTable::new();
+//! let mut scopes = ScopeTree::new();
+//! let mut hygiene = HygieneContext::new();
+//!
+//! // Resolution happens here...
+//! ```
 
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_nameres initialized");
-}
+pub mod hygiene;
+pub mod modules;
+pub mod resolver;
+pub mod scopes;
+pub mod symbols;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export main types
+pub use hygiene::{ExpansionContext, HygieneBinding, HygieneContext, HygieneResolver};
+pub use modules::{
+    DependencyKind, Module, ModuleDependency, ModuleError, ModuleGraph, ModuleId, ModulePath,
+};
+pub use resolver::{ResolutionError, ResolutionMap, ResolutionResult, Resolver};
+pub use scopes::{Scope, ScopeId, ScopeKind, ScopeTree};
+pub use symbols::{Symbol, SymbolId, SymbolKind, SymbolTable, Visibility};
