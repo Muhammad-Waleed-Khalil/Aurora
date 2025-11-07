@@ -1,22 +1,60 @@
-//! aurora_effects - Aurora Compiler Agent
+//! Aurora Effects & Borrow Checking System
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! This crate implements Aurora's effect system and borrow checker:
+//!
+//! # Effect System
+//! - Effect tracking (IO, Alloc, Parallel, Unsafe)
+//! - Effect polymorphism with effect variables
+//! - Subeffecting partial order
+//! - Effect composition and normalization
+//!
+//! # Borrow Checker
+//! - Advisory mode (warnings, not errors)
+//! - Dataflow analysis for borrows
+//! - Lifetime tracking and inference
+//! - Borrow conflict detection
+//!
+//! # ARC Insertion
+//! - Automatic reference counting at uncertain escape points
+//! - Escape analysis
+//! - Advisory emission for ARC sites
+//!
+//! # Strict Mode
+//! - Convert advisories to errors
+//! - Require explicit lifetimes
+//! - Disallow ARC insertion
+//! - Enforce all borrow rules strictly
+//!
+//! # Example
+//!
+//! ```rust
+//! use aurora_effects::{BorrowChecker, BorrowKind, Region};
+//!
+//! let mut checker = BorrowChecker::new();
+//! let region = Region::static_region(false);
+//!
+//! // Record shared borrows
+//! checker.record_borrow(BorrowKind::Shared, "x".to_string(), region.clone(), 1);
+//! checker.record_borrow(BorrowKind::Shared, "x".to_string(), region, 2);
+//!
+//! // Check for advisories
+//! assert!(!checker.has_advisories());
+//! ```
 
-#![warn(missing_docs)]
-#![warn(clippy::all)]
+pub mod arc;
+pub mod borrow;
+pub mod effects;
+pub mod lifetimes;
+pub mod strict;
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_effects initialized");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export commonly used types
+pub use arc::{ArcContext, ArcError, ArcOp, ArcSite, EscapeInfo, EscapeKind};
+pub use borrow::{
+    Advisory, Borrow, BorrowChecker, BorrowConflict, BorrowDataflow, BorrowError, BorrowKind,
+};
+pub use effects::{
+    check_effect_allowed, compose_effects, extract_effects, is_subeffect, Effect,
+    EffectInferContext, EffectSubstitution, EffectTracker,
+};
+pub use lifetimes::{Lifetime, LifetimeConstraint, LifetimeContext, LifetimeError, Region};
+pub use strict::{StrictChecker, StrictConfig, StrictError, StrictModeEnforcer};
