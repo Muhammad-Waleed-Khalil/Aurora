@@ -1,163 +1,56 @@
 {
-  "version": "1.0.0",
-  "description": "Aurora AST Schema - Frozen for MVP",
-  "node_types": [
-    {
-      "name": "Expr",
-      "description": "Expression nodes",
-      "variants": [
-        {
-          "name": "Literal",
-          "description": "Literal value (int, float, string, char, bool)",
-          "fields": [
-            {
-              "name": "value",
-              "type": "Literal",
-              "optional": false
-            }
-          ]
-        },
-        {
-          "name": "Ident",
-          "description": "Identifier reference",
-          "fields": [
-            {
-              "name": "name",
-              "type": "String",
-              "optional": false
-            }
-          ]
-        },
-        {
-          "name": "Binary",
-          "description": "Binary operation (e.g., a + b)",
-          "fields": [
-            {
-              "name": "op",
-              "type": "BinaryOp",
-              "optional": false
-            },
-            {
-              "name": "left",
-              "type": "ExprId",
-              "optional": false
-            },
-            {
-              "name": "right",
-              "type": "ExprId",
-              "optional": false
-            }
-          ]
-        }
-      ]
+  "schema_version": "1.0.0",
+  "language": "Aurora",
+  "description": "Aurora Abstract Syntax Tree Schema - Frozen for MVP",
+  "breaking_change_policy": "Schema changes that modify existing node types or remove fields are breaking changes and require a major version bump. Adding new optional fields or new node types are non-breaking.",
+  "node_types": {
+    "Program": {
+      "description": "Root AST node representing a complete program or module",
+      "fields": {
+        "items": {"type": "Vec<ItemId>", "description": "Top-level item declarations"},
+        "span": {"type": "Span", "description": "Source location spanning the entire program"}
+      }
     },
-    {
-      "name": "Stmt",
-      "description": "Statement nodes",
-      "variants": [
-        {
-          "name": "Let",
-          "description": "Let binding",
-          "fields": [
-            {
-              "name": "pattern",
-              "type": "PatternId",
-              "optional": false
-            },
-            {
-              "name": "ty",
-              "type": "TypeId",
-              "optional": true
-            },
-            {
-              "name": "init",
-              "type": "ExprId",
-              "optional": true
-            },
-            {
-              "name": "mutable",
-              "type": "bool",
-              "optional": false
-            }
-          ]
-        }
-      ]
+    "Item": {
+      "description": "Top-level declaration",
+      "fields": {
+        "kind": {"type": "ItemKind", "description": "The specific kind of item"},
+        "span": {"type": "Span", "description": "Source location"}
+      }
     },
-    {
-      "name": "Type",
-      "description": "Type nodes",
-      "variants": [
-        {
-          "name": "Int",
-          "description": "Signed integer type",
-          "fields": [
-            {
-              "name": "size",
-              "type": "IntType",
-              "optional": false
-            }
-          ]
-        },
-        {
-          "name": "Bool",
-          "description": "Boolean type",
-          "fields": []
-        }
-      ]
+    "Expr": {
+      "description": "Expression node",
+      "fields": {
+        "kind": {"type": "ExprKind", "description": "The specific kind of expression"},
+        "span": {"type": "Span", "description": "Source location"},
+        "hygiene": {"type": "HygieneId", "description": "Hygiene context for macro expansion"}
+      }
     },
-    {
-      "name": "Pattern",
-      "description": "Pattern nodes for destructuring",
-      "variants": [
-        {
-          "name": "Wildcard",
-          "description": "Wildcard pattern (_)",
-          "fields": []
-        },
-        {
-          "name": "Ident",
-          "description": "Identifier pattern",
-          "fields": [
-            {
-              "name": "name",
-              "type": "String",
-              "optional": false
-            },
-            {
-              "name": "is_mut",
-              "type": "bool",
-              "optional": false
-            }
-          ]
-        }
-      ]
+    "Stmt": {
+      "description": "Statement node",
+      "fields": {
+        "kind": {"type": "StmtKind", "description": "The specific kind of statement"},
+        "span": {"type": "Span", "description": "Source location"}
+      }
     },
-    {
-      "name": "Item",
-      "description": "Top-level declaration nodes",
-      "variants": [
-        {
-          "name": "Function",
-          "description": "Function declaration",
-          "fields": [
-            {
-              "name": "name",
-              "type": "String",
-              "optional": false
-            },
-            {
-              "name": "is_pub",
-              "type": "bool",
-              "optional": false
-            },
-            {
-              "name": "is_async",
-              "type": "bool",
-              "optional": false
-            }
-          ]
-        }
-      ]
+    "Type": {
+      "description": "Type node",
+      "fields": {
+        "kind": {"type": "TypeKind", "description": "The specific kind of type"},
+        "span": {"type": "Span", "description": "Source location"}
+      }
+    },
+    "Pattern": {
+      "description": "Pattern node for destructuring and matching",
+      "fields": {
+        "kind": {"type": "PatternKind", "description": "The specific kind of pattern"},
+        "span": {"type": "Span", "description": "Source location"}
+      }
     }
-  ]
+  },
+  "stability_guarantees": {
+    "version": "1.0.0",
+    "frozen_for": "MVP",
+    "breaking_changes": "Require major version bump and migration guide"
+  }
 }
