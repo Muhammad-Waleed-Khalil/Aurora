@@ -12,7 +12,7 @@ use crate::parser::Parser;
 impl Parser {
     /// Parse a top-level item
     pub(crate) fn parse_item(&mut self) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         // Check for visibility modifier
         let is_pub = if self.check(&TokenKind::Pub) {
@@ -35,7 +35,7 @@ impl Parser {
                 return Err(ParseError::Expected {
                     expected: "item declaration (fn, type, trait, impl, const, mod, use)".to_string(),
                     found: format!("{:?}", self.peek()),
-                    span: self.current().span,
+                    span: self.token_to_span(self.current()),
                     message: "Expected a top-level item".to_string(),
                 });
             }
@@ -48,7 +48,7 @@ impl Parser {
 
     /// Parse function declaration
     fn parse_function(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         // Check for async
         let is_async = if self.check(&TokenKind::Async) {
@@ -120,7 +120,7 @@ impl Parser {
         }
 
         loop {
-            let start = self.current().span;
+            let start = self.token_to_span(self.current());
 
             // Check for 'mut'
             let is_mut = if self.check(&TokenKind::Mut) {
@@ -170,7 +170,7 @@ impl Parser {
 
         if !self.check(&TokenKind::Gt) {
             loop {
-                let start = self.current().span;
+                let start = self.token_to_span(self.current());
                 let name_token = self.expect(TokenKind::Ident, "Expected generic parameter name")?;
                 let name = name_token.lexeme.clone();
 
@@ -193,7 +193,7 @@ impl Parser {
 
     /// Parse where clause
     fn parse_where_clause(&mut self) -> ParseResult<WhereClause> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         self.expect(TokenKind::Where, "Expected 'where'")?;
 
         // TODO: Parse predicates
@@ -205,7 +205,7 @@ impl Parser {
 
     /// Parse type declaration
     fn parse_type_decl(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Type, "Expected 'type'")?;
 
@@ -238,7 +238,7 @@ impl Parser {
 
     /// Parse trait declaration
     fn parse_trait(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Trait, "Expected 'trait'")?;
 
@@ -280,7 +280,7 @@ impl Parser {
 
     /// Parse impl declaration
     fn parse_impl(&mut self) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Impl, "Expected 'impl'")?;
 
@@ -332,7 +332,7 @@ impl Parser {
 
     /// Parse constant declaration
     fn parse_const(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Const, "Expected 'const'")?;
 
@@ -362,7 +362,7 @@ impl Parser {
 
     /// Parse module declaration
     fn parse_module(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Mod, "Expected 'mod'")?;
 
@@ -397,7 +397,7 @@ impl Parser {
 
     /// Parse use declaration
     fn parse_use(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::Use, "Expected 'use'")?;
 
@@ -419,8 +419,8 @@ impl Parser {
     }
 
     /// Parse a block
-    fn parse_block(&mut self) -> ParseResult<Block> {
-        let start = self.current().span;
+    pub(crate) fn parse_block(&mut self) -> ParseResult<Block> {
+        let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::LBrace, "Expected '{'")?;
 
@@ -446,7 +446,7 @@ impl Parser {
                                 expr: expr_id,
                                 has_semi: true,
                             },
-                            span: self.previous().span,
+                            span: self.token_to_span(self.previous()),
                         };
                         stmts.push(self.arena.alloc_stmt(stmt));
                     }

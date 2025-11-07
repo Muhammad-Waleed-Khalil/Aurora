@@ -34,6 +34,8 @@ pub enum TokenKind {
     Type,
     Trait,
     Impl,
+    Where,
+    In,
 
     // Keywords (modules and visibility)
     Use,
@@ -60,6 +62,23 @@ pub enum TokenKind {
     True,
     False,
 
+    // Primitive types
+    I8,
+    I16,
+    I32,
+    I64,
+    I128,
+    U8,
+    U16,
+    U32,
+    U64,
+    U128,
+    F32,
+    F64,
+    Bool,
+    Char,
+    Str,
+
     // Literals (special values)
     Some,
     None,
@@ -69,6 +88,7 @@ pub enum TokenKind {
 
     // Identifiers
     Ident,
+    Underscore,  // _
 
     // Literals (numeric)
     IntLiteral,

@@ -1,3 +1,12 @@
+#!/bin/bash
+cd /home/user/Aurora
+
+echo "=== Comprehensive Parser Fix Script ==="
+
+# Step 1: Fix parser.rs - make methods/fields public and add helper
+echo "Step 1: Fixing parser.rs..."
+
+cat > crates/aurora_parser/src/parser_fixed.rs << 'EOF'
 //! Core parser implementation
 //!
 //! This module implements the main parser structure that coordinates
@@ -239,9 +248,39 @@ mod tests {
             file: "test.ax".to_string(),
             line: 1,
             column: 1,
-            len: 0,
         }];
         let parser = Parser::from_tokens(tokens);
         assert!(parser.is_at_end());
     }
 }
+EOF
+
+mv crates/aurora_parser/src/parser_fixed.rs crates/aurora_parser/src/parser.rs
+echo "✓ parser.rs fixed"
+
+# Step 2: Fix decls.rs - replace .span with token_to_span()
+echo "Step 2: Fixing decls.rs spans..."
+sed -i 's/self\.current()\.span/self.token_to_span(self.current())/g' crates/aurora_parser/src/decls.rs
+sed -i 's/self\.previous()\.span/self.token_to_span(self.previous())/g' crates/aurora_parser/src/decls.rs
+echo "✓ decls.rs spans fixed"
+
+# Step 3: Fix exprs.rs - same span fixes
+echo "Step 3: Fixing exprs.rs spans..."
+sed -i 's/self\.current()\.span/self.token_to_span(self.current())/g' crates/aurora_parser/src/exprs.rs
+sed -i 's/self\.previous()\.span/self.token_to_span(self.previous())/g' crates/aurora_parser/src/exprs.rs
+echo "✓ exprs.rs spans fixed"
+
+# Step 4: Fix stmts.rs - span fixes
+echo "Step 4: Fixing stmts.rs spans..."
+sed -i 's/self\.current()\.span/self.token_to_span(self.current())/g' crates/aurora_parser/src/stmts.rs
+sed -i 's/self\.previous()\.span/self.token_to_span(self.previous())/g' crates/aurora_parser/src/stmts.rs
+echo "✓ stmts.rs spans fixed"
+
+# Step 5: Fix patterns.rs - span fixes
+echo "Step 5: Fixing patterns.rs spans..."
+sed -i 's/self\.current()\.span/self.token_to_span(self.current())/g' crates/aurora_parser/src/patterns.rs
+sed -i 's/self\.previous()\.span/self.token_to_span(self.previous())/g' crates/aurora_parser/src/patterns.rs
+echo "✓ patterns.rs spans fixed"
+
+echo ""
+echo "=== All fixes applied! ==="

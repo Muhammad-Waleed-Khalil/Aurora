@@ -15,7 +15,7 @@ use crate::parser::Parser;
 impl Parser {
     /// Parse a pattern expression
     pub(crate) fn parse_pattern(&mut self) -> ParseResult<u32> {
-        let start = self.current().span;
+        let start = self.token_to_span(self.current());
         
         let kind = match self.peek() {
             // Wildcard pattern (_)
@@ -40,25 +40,24 @@ impl Parser {
                 }
                 
                 // Check for 'mut' prefix
-                let mutable = if name == "mut" {
+                let (actual_name, is_mut) = if name == "mut" {
                     let ident_token = self.expect(TokenKind::Ident, "Expected identifier after 'mut'")?;
-                    let actual_name = ident_token.lexeme.clone();
-                    PatternKind::Ident { name: actual_name, mutable: true }
+                    (ident_token.lexeme.clone(), true)
                 } else {
-                    PatternKind::Ident { name, mutable: false }
+                    (name, false)
                 };
                 
-                mutable
+                PatternKind::Ident { name: actual_name, is_mut }
             }
             
             // Literal patterns
-            TokenKind::IntLiteral(n) => {
-                let n = *n;
+            TokenKind::IntLiteral => {
+                let n = self.current().lexeme.parse::<i64>().unwrap_or(0);
                 self.advance();
                 PatternKind::Literal(Literal::Int(n))
             }
-            TokenKind::FloatLiteral(f) => {
-                let f = *f;
+            TokenKind::FloatLiteral => {
+                let f = self.current().lexeme.parse::<f64>().unwrap_or(0.0);
                 self.advance();
                 PatternKind::Literal(Literal::Float(f))
             }
@@ -109,14 +108,18 @@ impl Parser {
                 return Err(ParseError::Expected {
                     expected: "pattern".to_string(),
                     found: format!("{:?}", self.peek()),
-                    span: self.current().span,
+                    span: self.token_to_span(self.current()),
                     message: "Expected a pattern expression".to_string(),
                 });
             }
         };
         
         let span = self.span_from(start);
-        let pattern = Pattern { kind, span };
+        let pattern = Pattern { 
+            kind, 
+            span,
+            hygiene: Default::default(),
+        };
         Ok(self.arena.alloc_pattern(pattern))
     }
     
@@ -125,26 +128,27 @@ impl Parser {
         self.expect(TokenKind::LBrace, "Expected '{'")?;
         
         let mut fields = Vec::new();
+        let mut has_rest = false;
         
         if !self.check(&TokenKind::RBrace) {
             loop {
-                let field_start = self.current().span;
+                // Check for rest pattern (..)
+                if self.check(&TokenKind::DotDot) {
+                    self.advance();
+                    has_rest = true;
+                    break;
+                }
+                
+                let field_start = self.token_to_span(self.current());
                 let field_name_token = self.expect(TokenKind::Ident, "Expected field name")?;
                 let field_name = field_name_token.lexeme.clone();
                 
                 let pattern = if self.check(&TokenKind::Colon) {
                     self.advance();
-                    self.parse_pattern()?
+                    Some(self.parse_pattern()?)
                 } else {
                     // Shorthand: `{ x }` means `{ x: x }`
-                    let ident_pattern = Pattern {
-                        kind: PatternKind::Ident {
-                            name: field_name.clone(),
-                            mutable: false,
-                        },
-                        span: field_start,
-                    };
-                    self.arena.alloc_pattern(ident_pattern)
+                    None
                 };
                 
                 let field_span = self.span_from(field_start);
@@ -169,8 +173,9 @@ impl Parser {
         
         let span = self.span_from(start);
         let pattern = Pattern {
-            kind: PatternKind::Struct { path, fields },
+            kind: PatternKind::Struct { path, fields, has_rest },
             span,
+            hygiene: Default::default(),
         };
         Ok(self.arena.alloc_pattern(pattern))
     }
