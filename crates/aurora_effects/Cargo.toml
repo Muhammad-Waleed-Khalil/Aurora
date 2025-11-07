@@ -1,11 +1,11 @@
 [package]
 name = "aurora_effects"
-version.workspace = true
-edition.workspace = true
-authors.workspace = true
-license.workspace = true
+version = "0.1.0"
+edition = "2021"
 
 [dependencies]
-aurora_ast = { path = "../aurora_ast" }
 aurora_types = { path = "../aurora_types" }
-thiserror.workspace = true
+serde = { version = "1.0", features = ["derive"] }
+thiserror = "2.0"
+
+[dev-dependencies]
