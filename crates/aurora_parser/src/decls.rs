@@ -62,7 +62,7 @@ impl Parser {
         self.expect(TokenKind::Fn, "Expected 'fn'")?;
 
         // Function name
-        let name_token = self.expect(TokenKind::Identifier, "Expected function name")?;
+        let name_token = self.expect(TokenKind::Ident, "Expected function name")?;
         let name = name_token.lexeme.clone();
 
         // Generic parameters (optional)
@@ -78,7 +78,7 @@ impl Parser {
         self.expect(TokenKind::RParen, "Expected ')' after parameters")?;
 
         // Return type (optional)
-        let return_type = if self.check(&TokenKind::Arrow) {
+        let return_type = if self.check(&TokenKind::RArrow) {
             self.advance();
             Some(self.parse_type()?)
         } else {
@@ -171,7 +171,7 @@ impl Parser {
         if !self.check(&TokenKind::Gt) {
             loop {
                 let start = self.current().span;
-                let name_token = self.expect(TokenKind::Identifier, "Expected generic parameter name")?;
+                let name_token = self.expect(TokenKind::Ident, "Expected generic parameter name")?;
                 let name = name_token.lexeme.clone();
 
                 // TODO: Parse bounds
@@ -209,7 +209,7 @@ impl Parser {
 
         self.expect(TokenKind::Type, "Expected 'type'")?;
 
-        let name_token = self.expect(TokenKind::Identifier, "Expected type name")?;
+        let name_token = self.expect(TokenKind::Ident, "Expected type name")?;
         let name = name_token.lexeme.clone();
 
         // Generic parameters (optional)
@@ -242,7 +242,7 @@ impl Parser {
 
         self.expect(TokenKind::Trait, "Expected 'trait'")?;
 
-        let name_token = self.expect(TokenKind::Identifier, "Expected trait name")?;
+        let name_token = self.expect(TokenKind::Ident, "Expected trait name")?;
         let name = name_token.lexeme.clone();
 
         // Generic parameters (optional)
@@ -336,7 +336,7 @@ impl Parser {
 
         self.expect(TokenKind::Const, "Expected 'const'")?;
 
-        let name_token = self.expect(TokenKind::Identifier, "Expected constant name")?;
+        let name_token = self.expect(TokenKind::Ident, "Expected constant name")?;
         let name = name_token.lexeme.clone();
 
         self.expect(TokenKind::Colon, "Expected ':' after constant name")?;
@@ -366,7 +366,7 @@ impl Parser {
 
         self.expect(TokenKind::Mod, "Expected 'mod'")?;
 
-        let name_token = self.expect(TokenKind::Identifier, "Expected module name")?;
+        let name_token = self.expect(TokenKind::Ident, "Expected module name")?;
         let name = name_token.lexeme.clone();
 
         // Check if it's inline module or external
@@ -465,35 +465,6 @@ impl Parser {
             expr: trailing_expr,
             span,
         })
-    }
-
-    // Placeholder methods to be implemented in other modules
-    fn parse_type(&mut self) -> ParseResult<u32> {
-        // TODO: Implement in types.rs
-        Ok(0)
-    }
-
-    fn parse_pattern(&mut self) -> ParseResult<u32> {
-        // TODO: Implement in patterns.rs
-        Ok(0)
-    }
-
-    fn parse_path(&mut self) -> ParseResult<aurora_ast::expr::Path> {
-        // TODO: Implement path parsing
-        Ok(aurora_ast::expr::Path {
-            segments: vec!["placeholder".to_string()],
-            generics: vec![],
-        })
-    }
-
-    fn parse_expr(&mut self) -> ParseResult<u32> {
-        // TODO: Implement in exprs.rs (Pratt parser)
-        Ok(0)
-    }
-
-    fn parse_stmt(&mut self) -> ParseResult<u32> {
-        // TODO: Implement in stmts.rs
-        Ok(0)
     }
 }
 
