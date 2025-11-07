@@ -14,7 +14,7 @@
 //! 3. **Generalization**: Generalize types at let-bindings (introduce forall)
 //! 4. **Instantiation**: Instantiate polymorphic types with fresh variables
 
-use crate::ty::{Constraint, EffectSet, PrimitiveType, Type, TypeVarId};
+use crate::ty::{EffectSet, PrimitiveType, Type, TypeVarId};
 use crate::unify::{compose_subst, unify, Substitution, UnificationError};
 use std::collections::{HashMap, HashSet};
 use thiserror::Error;
@@ -63,7 +63,7 @@ impl TypeEnv {
 
     /// Create environment with primitive types
     pub fn with_primitives() -> Self {
-        let mut env = Self::new();
+        let env = Self::new();
 
         // Add primitive type constructors
         // These will be added as needed
