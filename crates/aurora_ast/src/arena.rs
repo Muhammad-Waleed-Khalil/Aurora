@@ -120,6 +120,46 @@ impl Arena {
         &self.nodes
     }
 
+    /// Get an item node by ID
+    pub fn get_item(&self, id: u32) -> Option<&Item> {
+        match self.get(id)? {
+            AstNode::Item(item) => Some(item),
+            _ => None,
+        }
+    }
+
+    /// Get an expression node by ID
+    pub fn get_expr(&self, id: u32) -> Option<&Expr> {
+        match self.get(id)? {
+            AstNode::Expr(expr) => Some(expr),
+            _ => None,
+        }
+    }
+
+    /// Get a statement node by ID
+    pub fn get_stmt(&self, id: u32) -> Option<&Stmt> {
+        match self.get(id)? {
+            AstNode::Stmt(stmt) => Some(stmt),
+            _ => None,
+        }
+    }
+
+    /// Get a pattern node by ID
+    pub fn get_pattern(&self, id: u32) -> Option<&Pattern> {
+        match self.get(id)? {
+            AstNode::Pattern(pattern) => Some(pattern),
+            _ => None,
+        }
+    }
+
+    /// Get a type node by ID
+    pub fn get_type_node(&self, id: u32) -> Option<&Type> {
+        match self.get(id)? {
+            AstNode::Type(ty) => Some(ty),
+            _ => None,
+        }
+    }
+
     /// Get the number of nodes in the arena
     pub fn len(&self) -> usize {
         self.nodes.len()
