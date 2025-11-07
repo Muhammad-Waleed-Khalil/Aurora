@@ -14,9 +14,9 @@
 //! - `ty`: Core type representation, equality, subtyping
 //! - `unify`: Unification algorithm for type inference
 //! - `infer`: Hindley-Milner type inference with generalization
-//! - `traits`: Typeclass resolution (TODO)
-//! - `generics`: Generic instantiation (TODO)
-//! - `option`: Null safety and exhaustiveness (TODO)
+//! - `traits`: Typeclass resolution with coherence checking
+//! - `generics`: Generic instantiation and monomorphization tracking
+//! - `exhaustive`: Exhaustiveness checking for pattern matching
 //!
 //! # Example
 //!
@@ -34,11 +34,17 @@
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
+pub mod exhaustive;
+pub mod generics;
 pub mod infer;
+pub mod traits;
 pub mod ty;
 pub mod unify;
 
 // Re-export main types
+pub use exhaustive::{ExhaustivenessError, Pattern as ExhaustPattern};
+pub use generics::{GenericDef, GenericError, GenericParam, MonoInstance, MonoTracker};
 pub use infer::{InferContext, InferenceError, TypeEnv, TypeScheme};
+pub use traits::{AssocType, MethodSignature, Trait, TraitBound, TraitError, TraitImpl, TraitRegistry};
 pub use ty::{Constraint, EffectSet, Lifetime, PrimitiveType, Type, TypeId, TypeVarId};
 pub use unify::{Substitution, UnificationError};
