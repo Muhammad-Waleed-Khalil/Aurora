@@ -12,8 +12,8 @@
 //!
 //! The type system is organized into modules:
 //! - `ty`: Core type representation, equality, subtyping
-//! - `infer`: Hindley-Milner type inference (TODO)
-//! - `unify`: Unification algorithm (TODO)
+//! - `unify`: Unification algorithm for type inference
+//! - `infer`: Hindley-Milner type inference with generalization
 //! - `traits`: Typeclass resolution (TODO)
 //! - `generics`: Generic instantiation (TODO)
 //! - `option`: Null safety and exhaustiveness (TODO)
@@ -34,9 +34,11 @@
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
+pub mod infer;
 pub mod ty;
+pub mod unify;
 
 // Re-export main types
-pub use ty::{
-    Constraint, EffectSet, Lifetime, PrimitiveType, Type, TypeId, TypeVarId,
-};
+pub use infer::{InferContext, InferenceError, TypeEnv, TypeScheme};
+pub use ty::{Constraint, EffectSet, Lifetime, PrimitiveType, Type, TypeId, TypeVarId};
+pub use unify::{Substitution, UnificationError};
