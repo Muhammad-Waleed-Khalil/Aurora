@@ -1,0 +1,13 @@
+[package]
+name = "aurora_backend"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_mir = { path = "../aurora_mir" }
+aurora_air = { path = "../aurora_air" }
+# LLVM bindings will be added in Phase 7
+# inkwell = { version = "0.4", features = ["llvm16-0"] }
+thiserror.workspace = true

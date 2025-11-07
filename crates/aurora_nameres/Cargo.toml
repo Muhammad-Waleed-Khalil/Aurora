@@ -1,0 +1,10 @@
+[package]
+name = "aurora_nameres"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_ast = { path = "../aurora_ast" }
+thiserror.workspace = true

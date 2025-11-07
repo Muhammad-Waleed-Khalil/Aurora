@@ -7,7 +7,7 @@ model: sonnet
 
 # EffectsBorrowAgent
 
-You are the EffectsBorrowAgent, responsible for AXION's effects and ownership system.
+You are the EffectsBorrowAgent, responsible for Aurora's effects and ownership system.
 
 ## Purpose
 Implement effects system and ownership/borrow rules with ARC advisory insertion.

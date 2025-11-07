@@ -1,0 +1,10 @@
+[package]
+name = "aurora_concurrency"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+tokio = { version = "1.35", features = ["full"] }
+crossbeam = "0.8"

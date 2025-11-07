@@ -1,0 +1,163 @@
+{
+  "version": "1.0.0",
+  "description": "Aurora AST Schema - Frozen for MVP",
+  "node_types": [
+    {
+      "name": "Expr",
+      "description": "Expression nodes",
+      "variants": [
+        {
+          "name": "Literal",
+          "description": "Literal value (int, float, string, char, bool)",
+          "fields": [
+            {
+              "name": "value",
+              "type": "Literal",
+              "optional": false
+            }
+          ]
+        },
+        {
+          "name": "Ident",
+          "description": "Identifier reference",
+          "fields": [
+            {
+              "name": "name",
+              "type": "String",
+              "optional": false
+            }
+          ]
+        },
+        {
+          "name": "Binary",
+          "description": "Binary operation (e.g., a + b)",
+          "fields": [
+            {
+              "name": "op",
+              "type": "BinaryOp",
+              "optional": false
+            },
+            {
+              "name": "left",
+              "type": "ExprId",
+              "optional": false
+            },
+            {
+              "name": "right",
+              "type": "ExprId",
+              "optional": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Stmt",
+      "description": "Statement nodes",
+      "variants": [
+        {
+          "name": "Let",
+          "description": "Let binding",
+          "fields": [
+            {
+              "name": "pattern",
+              "type": "PatternId",
+              "optional": false
+            },
+            {
+              "name": "ty",
+              "type": "TypeId",
+              "optional": true
+            },
+            {
+              "name": "init",
+              "type": "ExprId",
+              "optional": true
+            },
+            {
+              "name": "mutable",
+              "type": "bool",
+              "optional": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Type",
+      "description": "Type nodes",
+      "variants": [
+        {
+          "name": "Int",
+          "description": "Signed integer type",
+          "fields": [
+            {
+              "name": "size",
+              "type": "IntType",
+              "optional": false
+            }
+          ]
+        },
+        {
+          "name": "Bool",
+          "description": "Boolean type",
+          "fields": []
+        }
+      ]
+    },
+    {
+      "name": "Pattern",
+      "description": "Pattern nodes for destructuring",
+      "variants": [
+        {
+          "name": "Wildcard",
+          "description": "Wildcard pattern (_)",
+          "fields": []
+        },
+        {
+          "name": "Ident",
+          "description": "Identifier pattern",
+          "fields": [
+            {
+              "name": "name",
+              "type": "String",
+              "optional": false
+            },
+            {
+              "name": "is_mut",
+              "type": "bool",
+              "optional": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Item",
+      "description": "Top-level declaration nodes",
+      "variants": [
+        {
+          "name": "Function",
+          "description": "Function declaration",
+          "fields": [
+            {
+              "name": "name",
+              "type": "String",
+              "optional": false
+            },
+            {
+              "name": "is_pub",
+              "type": "bool",
+              "optional": false
+            },
+            {
+              "name": "is_async",
+              "type": "bool",
+              "optional": false
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

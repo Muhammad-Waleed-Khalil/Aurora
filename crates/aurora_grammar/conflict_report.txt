@@ -1,0 +1,39 @@
+✗ Grammar Conflicts Detected
+
+Conflict #1: FirstFirst
+  Non-terminal: Item
+  Productions: [0, 1]
+  Symbols: ["ε"]
+  Description: Productions 0 and 1 have overlapping FIRST sets
+
+Conflict #2: FirstFirst
+  Non-terminal: Item
+  Productions: [0, 2]
+  Symbols: ["ε"]
+  Description: Productions 0 and 2 have overlapping FIRST sets
+
+Conflict #3: FirstFirst
+  Non-terminal: Item
+  Productions: [0, 6]
+  Symbols: ["ε"]
+  Description: Productions 0 and 6 have overlapping FIRST sets
+
+Conflict #4: FirstFirst
+  Non-terminal: Item
+  Productions: [1, 2]
+  Symbols: ["ε"]
+  Description: Productions 1 and 2 have overlapping FIRST sets
+
+Conflict #5: FirstFirst
+  Non-terminal: Item
+  Productions: [1, 6]
+  Symbols: ["ε"]
+  Description: Productions 1 and 6 have overlapping FIRST sets
+
+Conflict #6: FirstFirst
+  Non-terminal: Item
+  Productions: [2, 6]
+  Symbols: ["ε"]
+  Description: Productions 2 and 6 have overlapping FIRST sets
+
+Total conflicts: 6

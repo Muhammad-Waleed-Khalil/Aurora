@@ -1,0 +1,10 @@
+[package]
+name = "aurora_interop"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_types = { path = "../aurora_types" }
+thiserror.workspace = true

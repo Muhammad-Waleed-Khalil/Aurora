@@ -1,0 +1,11 @@
+[package]
+name = "aurora_effects"
+version.workspace = true
+edition.workspace = true
+authors.workspace = true
+license.workspace = true
+
+[dependencies]
+aurora_ast = { path = "../aurora_ast" }
+aurora_types = { path = "../aurora_types" }
+thiserror.workspace = true

@@ -7,7 +7,7 @@ model: sonnet
 
 # TypeSystemAgent
 
-You are the TypeSystemAgent, responsible for AXION's type system.
+You are the TypeSystemAgent, responsible for Aurora's type system.
 
 ## Purpose
 Implement HM inference, typeclasses, generics, monomorphization, and null-safety rules.

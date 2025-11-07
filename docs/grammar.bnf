@@ -1,0 +1,76 @@
+// Top-level program structure
+Program ::=
+      { Item }   // Zero or more top-level items
+
+// Top-level item (declaration)
+Item ::=
+      FunctionDecl   // Function declaration
+    | TypeDecl   // Type declaration
+    | TraitDecl   // Trait declaration
+    | ImplDecl   // Implementation declaration
+    | ConstDecl   // Constant declaration
+    | ModDecl   // Module declaration
+    | UseDecl   // Use/import declaration
+
+// fn foo<T>(x: T) -> T where T: Clone { ... }
+FunctionDecl ::=
+      [ 'pub' ] [ 'async' ] 'fn' 'IDENT' [ GenericParams ] '(' [ ParamList ] ')' [ ( '->' Type ) ] [ WhereClause ] Block   // Function declaration
+
+// type MyInt = i64;
+TypeDecl ::=
+      [ 'pub' ] 'type' 'IDENT' [ GenericParams ] '=' Type ';'   // Type alias
+
+// trait Clone { fn clone(&self) -> Self; }
+TraitDecl ::=
+      [ 'pub' ] 'trait' 'IDENT' [ GenericParams ] [ WhereClause ] '{' { TraitItem } '}'   // Trait definition
+
+// use std::collections::HashMap;
+UseDecl ::=
+      [ 'pub' ] 'use' Path ';'   // Use/import statement
+
+// Statement
+Statement ::=
+      LetStmt   // Let binding
+    | ExprStmt   // Expression statement
+    | Item   // Item in statement position
+
+// let mut x: i64 = 42;
+LetStmt ::=
+      'let' [ 'mut' ] Pattern [ ( ':' Type ) ] [ ( '=' Expr ) ] ';'   // Let binding
+
+// { stmt1; stmt2; expr }
+Block ::=
+      '{' { Statement } [ Expr ] '}'   // Block expression
+
+// Type expressions
+Type ::=
+      PrimitiveType   // Primitive type
+    | PathType   // Named type
+    | TupleType   // Tuple type
+    | ArrayType   // Array type
+    | FunctionType   // Function type
+
+// Primitive types
+PrimitiveType ::=
+      'i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|char|str'   // Primitive type keywords
+
+// Pattern matching
+Pattern ::=
+      'IDENT'   // Identifier pattern
+    | '_'   // Wildcard pattern
+    | TuplePattern   // Tuple pattern
+    | StructPattern   // Struct pattern
+
+// Expressions use Pratt parsing with precedence table
+Expr ::=
+      PrattExpr   // Expression parsed by Pratt parser
+
+// Primary expressions
+PrimaryExpr ::=
+      'LITERAL'   // Literal value
+    | 'IDENT'   // Identifier
+    | Block   // Block expression
+    | IfExpr   // If expression
+    | MatchExpr   // Match expression
+    | LoopExpr   // Loop expression
+

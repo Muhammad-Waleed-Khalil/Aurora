@@ -1,0 +1,71 @@
+name: Benchmarks
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+  schedule:
+    # Run benchmarks weekly on Sundays at 00:00 UTC
+    - cron: '0 0 * * 0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  benchmark:
+    name: Run Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo build
+        uses: actions/cache@v4
+        with:
+          path: target
+          key: ${{ runner.os }}-bench-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Run benchmarks
+        run: cargo bench --workspace -- --output-format bencher | tee benchmark_output.txt
+
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name != 'pull_request'
+        with:
+          tool: 'cargo'
+          output-file-path: benchmark_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          auto-push: true
+
+      - name: Compare benchmark results (PR only)
+        uses: benchmark-action/github-action-benchmark@v1
+        if: github.event_name == 'pull_request'
+        with:
+          tool: 'cargo'
+          output-file-path: benchmark_output.txt
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          alert-threshold: '110%'
+          comment-on-alert: true
+          fail-on-alert: false
+
+  lexer-performance:
+    name: Lexer Performance Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Run lexer benchmarks
+        run: cargo bench --package ax_lexer || echo "Lexer benchmarks not yet fully implemented"
+
+      - name: Check performance targets
+        run: |
+          echo "Performance target: Lexer throughput ≥100 MB/s"
+          echo "Full validation will be implemented in Phase 1"

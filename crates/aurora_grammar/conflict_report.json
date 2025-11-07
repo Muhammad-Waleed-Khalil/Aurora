@@ -1,0 +1,141 @@
+{
+  "conflicts": [
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        0,
+        1
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 0 and 1 have overlapping FIRST sets"
+    },
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        0,
+        2
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 0 and 2 have overlapping FIRST sets"
+    },
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        0,
+        6
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 0 and 6 have overlapping FIRST sets"
+    },
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        1,
+        2
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 1 and 2 have overlapping FIRST sets"
+    },
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        1,
+        6
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 1 and 6 have overlapping FIRST sets"
+    },
+    {
+      "conflict_type": "first_first",
+      "non_terminal": "Item",
+      "productions": [
+        2,
+        6
+      ],
+      "symbols": [
+        "ε"
+      ],
+      "description": "Productions 2 and 6 have overlapping FIRST sets"
+    }
+  ],
+  "first_sets": {
+    "Item": [
+      "ε"
+    ],
+    "TypeDecl": [
+      "ε"
+    ],
+    "UseDecl": [
+      "ε"
+    ],
+    "FunctionDecl": [
+      "ε"
+    ],
+    "LetStmt": [
+      "let"
+    ],
+    "PrimaryExpr": [
+      "LITERAL",
+      "IDENT",
+      "{"
+    ],
+    "TraitDecl": [
+      "ε"
+    ],
+    "PrimitiveType": [
+      "i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|char|str"
+    ],
+    "Pattern": [
+      "IDENT",
+      "_"
+    ],
+    "Program": [
+      "ε"
+    ],
+    "Statement": [
+      "let",
+      "ε"
+    ],
+    "Block": [
+      "{"
+    ],
+    "Type": [
+      "i8|i16|i32|i64|u8|u16|u32|u64|f32|f64|bool|char|str"
+    ],
+    "Expr": []
+  },
+  "follow_sets": {
+    "Type": [],
+    "Block": [],
+    "Program": [
+      "EOF"
+    ],
+    "Item": [],
+    "Statement": [],
+    "TraitDecl": [],
+    "TypeDecl": [],
+    "LetStmt": [],
+    "PrimitiveType": [],
+    "Pattern": [],
+    "UseDecl": [],
+    "Expr": [],
+    "FunctionDecl": [],
+    "PrimaryExpr": []
+  },
+  "is_clean": false
+}

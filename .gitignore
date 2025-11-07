@@ -1,0 +1,92 @@
+# Rust / Cargo
+/target/
+**/target/
+**/*.rs.bk
+*.pdb
+Cargo.lock
+*.rlib
+*.prof
+*.profdata
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+*.iml
+
+# Build outputs
+/dist/
+/build/
+/out/
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+
+# Logs and databases
+*.log
+*.sql
+*.sqlite
+*.db
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Testing
+/coverage/
+*.gcda
+*.gcno
+*.gcov
+/htmlcov/
+.tox/
+.pytest_cache/
+
+# Documentation
+/book/
+/mdbook-book/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.cache
+
+# OS specific
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Benchmarking
+/benches/target/
+*.criterion
+
+# Local development
+local/
+scratch/
+tmp/
+
+# CI artifacts
+.github_token
+
+# Aurora specific
+/stdlib/target/
+/tools/target/
+*.air
+*.mir
+*_dump.txt
