@@ -31,6 +31,8 @@ impl Parser {
             TokenKind::Const => self.parse_const(is_pub)?,
             TokenKind::Mod => self.parse_module(is_pub)?,
             TokenKind::Use => self.parse_use(is_pub)?,
+            // Note: struct and enum are parsed via 'type' for now
+            // They'll be added when we implement full struct/enum syntax
             _ => {
                 return Err(ParseError::Expected {
                     expected: "item declaration (fn, type, trait, impl, const, mod, use)".to_string(),
@@ -262,7 +264,7 @@ impl Parser {
         self.expect(TokenKind::LBrace, "Expected '{' after trait name")?;
 
         // Parse trait items
-        let items = Vec::new(); // TODO: parse trait items
+        let items = self.parse_trait_items()?;
 
         self.expect(TokenKind::RBrace, "Expected '}' to close trait")?;
 
@@ -314,7 +316,7 @@ impl Parser {
         self.expect(TokenKind::LBrace, "Expected '{' after impl signature")?;
 
         // Parse impl items
-        let items = Vec::new(); // TODO: parse impl items
+        let items = self.parse_impl_items()?;
 
         self.expect(TokenKind::RBrace, "Expected '}' to close impl")?;
 
@@ -418,6 +420,91 @@ impl Parser {
         Ok(UseTree::Path { path, alias: None })
     }
 
+    /// Parse trait items
+    fn parse_trait_items(&mut self) -> ParseResult<Vec<aurora_ast::decl::TraitItem>> {
+        let mut items = Vec::new();
+
+        while !self.check(&TokenKind::RBrace) && !self.is_at_end() {
+            // For now, just skip trait items
+            // Full implementation would parse fn signatures, associated types, etc.
+            if self.check(&TokenKind::Fn) {
+                // Skip function signature for now
+                self.advance();
+                while !self.check(&TokenKind::Semicolon) && !self.check(&TokenKind::LBrace) && !self.is_at_end() {
+                    self.advance();
+                }
+                if self.check(&TokenKind::Semicolon) {
+                    self.advance();
+                } else if self.check(&TokenKind::LBrace) {
+                    // Skip body
+                    let mut depth = 1;
+                    self.advance();
+                    while depth > 0 && !self.is_at_end() {
+                        if self.check(&TokenKind::LBrace) {
+                            depth += 1;
+                        } else if self.check(&TokenKind::RBrace) {
+                            depth -= 1;
+                        }
+                        self.advance();
+                    }
+                }
+            } else {
+                self.advance();
+            }
+        }
+
+        Ok(items)
+    }
+
+    /// Parse impl items
+    fn parse_impl_items(&mut self) -> ParseResult<Vec<aurora_ast::decl::ImplItem>> {
+        use aurora_ast::decl::ImplItem;
+        let mut items = Vec::new();
+
+        while !self.check(&TokenKind::RBrace) && !self.is_at_end() {
+            let start = self.token_to_span(self.current());
+
+            // Check for pub
+            let is_pub = if self.check(&TokenKind::Pub) {
+                self.advance();
+                true
+            } else {
+                false
+            };
+
+            match self.peek() {
+                TokenKind::Fn => {
+                    let func = self.parse_function(is_pub)?;
+                    if let ItemKind::Function(func_decl) = func {
+                        items.push(ImplItem::Function(func_decl));
+                    }
+                }
+                TokenKind::Const => {
+                    let const_item = self.parse_const(is_pub)?;
+                    if let ItemKind::Const(const_decl) = const_item {
+                        items.push(ImplItem::Const(const_decl));
+                    }
+                }
+                TokenKind::Type => {
+                    let type_item = self.parse_type_decl(is_pub)?;
+                    if let ItemKind::Type(type_decl) = type_item {
+                        items.push(ImplItem::Type(type_decl));
+                    }
+                }
+                _ => {
+                    return Err(ParseError::Expected {
+                        expected: "impl item (fn, const, type)".to_string(),
+                        found: format!("{:?}", self.peek()),
+                        span: self.token_to_span(self.current()),
+                        message: "Expected an impl item".to_string(),
+                    });
+                }
+            }
+        }
+
+        Ok(items)
+    }
+
     /// Parse a block
     pub(crate) fn parse_block(&mut self) -> ParseResult<Block> {
         let start = self.token_to_span(self.current());
@@ -477,7 +564,7 @@ mod tests {
     fn test_parse_empty_function() {
         let source = "fn test() {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (program, _arena) = parser.parse().unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
         assert_eq!(program.items.len(), 1);
     }
 
@@ -485,7 +572,7 @@ mod tests {
     fn test_parse_pub_function() {
         let source = "pub fn test() {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (program, _arena) = parser.parse().unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
         assert_eq!(program.items.len(), 1);
     }
 
@@ -493,14 +580,14 @@ mod tests {
     fn test_parse_type_alias() {
         let source = "type MyInt = i64;";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
 
     #[test]
     fn test_parse_module() {
         let source = "mod test;";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (program, _arena) = parser.parse().unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
         assert_eq!(program.items.len(), 1);
     }
 }

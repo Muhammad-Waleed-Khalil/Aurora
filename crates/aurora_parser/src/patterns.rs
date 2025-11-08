@@ -190,20 +190,20 @@ mod tests {
     fn test_parse_identifier_pattern() {
         let source = "fn test(x: i32) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_mut_pattern() {
         let source = "fn test(mut x: i32) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_wildcard_pattern() {
         let source = "fn test(_: i32) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
 }

@@ -25,7 +25,49 @@ pub enum Register {
 
 impl fmt::Display for Register {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
+        let name = match self {
+            Register::RAX => "rax",
+            Register::RBX => "rbx",
+            Register::RCX => "rcx",
+            Register::RDX => "rdx",
+            Register::RSI => "rsi",
+            Register::RDI => "rdi",
+            Register::RBP => "rbp",
+            Register::RSP => "rsp",
+            Register::R8 => "r8",
+            Register::R9 => "r9",
+            Register::R10 => "r10",
+            Register::R11 => "r11",
+            Register::R12 => "r12",
+            Register::R13 => "r13",
+            Register::R14 => "r14",
+            Register::R15 => "r15",
+            Register::EAX => "eax",
+            Register::EBX => "ebx",
+            Register::ECX => "ecx",
+            Register::EDX => "edx",
+            Register::ESI => "esi",
+            Register::EDI => "edi",
+            Register::EBP => "ebp",
+            Register::ESP => "esp",
+            Register::XMM0 => "xmm0",
+            Register::XMM1 => "xmm1",
+            Register::XMM2 => "xmm2",
+            Register::XMM3 => "xmm3",
+            Register::XMM4 => "xmm4",
+            Register::XMM5 => "xmm5",
+            Register::XMM6 => "xmm6",
+            Register::XMM7 => "xmm7",
+            Register::XMM8 => "xmm8",
+            Register::XMM9 => "xmm9",
+            Register::XMM10 => "xmm10",
+            Register::XMM11 => "xmm11",
+            Register::XMM12 => "xmm12",
+            Register::XMM13 => "xmm13",
+            Register::XMM14 => "xmm14",
+            Register::XMM15 => "xmm15",
+        };
+        write!(f, "{}", name)
     }
 }
 
@@ -109,21 +151,58 @@ pub enum Instruction {
 impl fmt::Display for Instruction {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
+            // Data movement
             Instruction::Mov { dest, src } => write!(f, "    mov {}, {}", dest, src),
+            Instruction::Movzx { dest, src } => write!(f, "    movzx {}, {}", dest, src),
+            Instruction::Movsx { dest, src } => write!(f, "    movsx {}, {}", dest, src),
+            Instruction::Lea { dest, src } => write!(f, "    lea {}, {}", dest, src),
+
+            // Arithmetic
             Instruction::Add { dest, src } => write!(f, "    add {}, {}", dest, src),
             Instruction::Sub { dest, src } => write!(f, "    sub {}, {}", dest, src),
             Instruction::Imul { dest, src } => write!(f, "    imul {}, {}", dest, src),
+            Instruction::Idiv { operand } => write!(f, "    idiv {}", operand),
+            Instruction::Inc { operand } => write!(f, "    inc {}", operand),
+            Instruction::Dec { operand } => write!(f, "    dec {}", operand),
+            Instruction::Neg { operand } => write!(f, "    neg {}", operand),
+
+            // Logical
+            Instruction::And { dest, src } => write!(f, "    and {}, {}", dest, src),
+            Instruction::Or { dest, src } => write!(f, "    or {}, {}", dest, src),
+            Instruction::Xor { dest, src } => write!(f, "    xor {}, {}", dest, src),
+            Instruction::Not { operand } => write!(f, "    not {}", operand),
+            Instruction::Shl { dest, count } => write!(f, "    shl {}, {}", dest, count),
+            Instruction::Shr { dest, count } => write!(f, "    shr {}, {}", dest, count),
+            Instruction::Sar { dest, count } => write!(f, "    sar {}, {}", dest, count),
+
+            // Comparison
             Instruction::Cmp { left, right } => write!(f, "    cmp {}, {}", left, right),
+            Instruction::Test { left, right } => write!(f, "    test {}, {}", left, right),
+
+            // Control flow
             Instruction::Jmp { target } => write!(f, "    jmp {}", target),
             Instruction::Je { target } => write!(f, "    je {}", target),
+            Instruction::Jne { target } => write!(f, "    jne {}", target),
+            Instruction::Jl { target } => write!(f, "    jl {}", target),
+            Instruction::Jle { target } => write!(f, "    jle {}", target),
+            Instruction::Jg { target } => write!(f, "    jg {}", target),
+            Instruction::Jge { target } => write!(f, "    jge {}", target),
             Instruction::Call { target } => write!(f, "    call {}", target),
             Instruction::Ret => write!(f, "    ret"),
+
+            // Stack
             Instruction::Push { operand } => write!(f, "    push {}", operand),
             Instruction::Pop { operand } => write!(f, "    pop {}", operand),
+
+            // SIMD
+            Instruction::Movaps { dest, src } => write!(f, "    movaps {}, {}", dest, src),
+            Instruction::Addps { dest, src } => write!(f, "    addps {}, {}", dest, src),
+            Instruction::Mulps { dest, src } => write!(f, "    mulps {}, {}", dest, src),
+
+            // Special
+            Instruction::Nop => write!(f, "    nop"),
             Instruction::Label { name } => write!(f, "{}:", name),
             Instruction::Comment { text } => write!(f, "    ; {}", text),
-            Instruction::Nop => write!(f, "    nop"),
-            _ => write!(f, "    {:?}", self), // Simplified for other instructions
         }
     }
 }
@@ -295,7 +374,32 @@ pub enum DataKind {
 
 impl fmt::Display for DataDirective {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}:  ; {:?} data", self.label, self.kind)
+        match &self.kind {
+            DataKind::String => {
+                // For strings, output as db directive with bytes
+                write!(f, "{}:  db ", self.label)?;
+                for (i, &byte) in self.value.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", byte)?;
+                }
+                Ok(())
+            }
+            DataKind::Byte => {
+                write!(f, "{}:  db ", self.label)?;
+                for (i, &byte) in self.value.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{}", byte)?;
+                }
+                Ok(())
+            }
+            DataKind::Word => write!(f, "{}:  dw {}", self.label, self.value[0]),
+            DataKind::Dword => write!(f, "{}:  dd {}", self.label, self.value[0]),
+            DataKind::Qword => write!(f, "{}:  dq {}", self.label, self.value[0]),
+        }
     }
 }
 

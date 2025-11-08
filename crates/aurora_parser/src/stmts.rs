@@ -105,27 +105,27 @@ mod tests {
     fn test_parse_let_stmt() {
         let source = "fn test() { let x = 42; }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_let_mut_stmt() {
         let source = "fn test() { let mut x = 42; }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_let_with_type() {
         let source = "fn test() { let x: i32 = 42; }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_expr_stmt() {
         let source = "fn test() { foo(); bar(); }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
 }

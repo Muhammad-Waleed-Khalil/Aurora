@@ -565,34 +565,41 @@ impl Parser {
     /// Parse struct literal
     fn parse_struct_literal(&mut self, path: Path, start: Span) -> ParseResult<u32> {
         self.expect(TokenKind::LBrace, "Expected '{'")?;
-        
+
         let mut fields = Vec::new();
-        
+
         if !self.check(&TokenKind::RBrace) {
             loop {
                 let field_start = self.token_to_span(self.current());
                 let field_name_token = self.expect(TokenKind::Ident, "Expected field name")?;
                 let field_name = field_name_token.lexeme.clone();
-                
-                self.expect(TokenKind::Colon, "Expected ':' after field name")?;
-                let value = self.parse_expr()?;
-                
+
+                let value = if self.check(&TokenKind::Colon) {
+                    // Explicit field value: `x: expr`
+                    self.advance();
+                    self.parse_expr()?
+                } else {
+                    // Shorthand: `x` means `x: x`
+                    let ident_expr = ExprKind::Ident(field_name.clone());
+                    self.alloc_expr(ident_expr, field_start)
+                };
+
                 let field_span = self.span_from(field_start);
                 fields.push(FieldInit { name: field_name, value, span: field_span });
-                
+
                 if !self.check(&TokenKind::Comma) {
                     break;
                 }
                 self.advance();
-                
+
                 if self.check(&TokenKind::RBrace) {
                     break;
                 }
             }
         }
-        
+
         self.expect(TokenKind::RBrace, "Expected '}' after struct fields")?;
-        
+
         let kind = ExprKind::Struct { path, fields };
         Ok(self.alloc_expr(kind, start))
     }
@@ -665,27 +672,27 @@ mod tests {
     fn test_parse_literal_expr() {
         let source = "fn test() { 42; }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_binary_expr() {
         let source = "fn test() { 1 + 2 * 3; }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_if_expr() {
         let source = "fn test() { if true { 1 } else { 2 } }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_function_call() {
         let source = "fn test() { foo(1, 2, 3); }";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
 }

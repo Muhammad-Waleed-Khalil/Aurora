@@ -205,6 +205,8 @@ impl TokenKind {
                 | TokenKind::Type
                 | TokenKind::Trait
                 | TokenKind::Impl
+                | TokenKind::Where
+                | TokenKind::In
                 | TokenKind::Use
                 | TokenKind::Mod
                 | TokenKind::Pub
@@ -220,6 +222,21 @@ impl TokenKind {
                 | TokenKind::Comptime
                 | TokenKind::True
                 | TokenKind::False
+                | TokenKind::I8
+                | TokenKind::I16
+                | TokenKind::I32
+                | TokenKind::I64
+                | TokenKind::I128
+                | TokenKind::U8
+                | TokenKind::U16
+                | TokenKind::U32
+                | TokenKind::U64
+                | TokenKind::U128
+                | TokenKind::F32
+                | TokenKind::F64
+                | TokenKind::Bool
+                | TokenKind::Char
+                | TokenKind::Str
                 | TokenKind::Some
                 | TokenKind::None
                 | TokenKind::Ok
@@ -312,6 +329,8 @@ impl TokenKind {
             TokenKind::Type => Some("type"),
             TokenKind::Trait => Some("trait"),
             TokenKind::Impl => Some("impl"),
+            TokenKind::Where => Some("where"),
+            TokenKind::In => Some("in"),
             TokenKind::Use => Some("use"),
             TokenKind::Mod => Some("mod"),
             TokenKind::Pub => Some("pub"),
@@ -327,6 +346,21 @@ impl TokenKind {
             TokenKind::Comptime => Some("comptime"),
             TokenKind::True => Some("true"),
             TokenKind::False => Some("false"),
+            TokenKind::I8 => Some("i8"),
+            TokenKind::I16 => Some("i16"),
+            TokenKind::I32 => Some("i32"),
+            TokenKind::I64 => Some("i64"),
+            TokenKind::I128 => Some("i128"),
+            TokenKind::U8 => Some("u8"),
+            TokenKind::U16 => Some("u16"),
+            TokenKind::U32 => Some("u32"),
+            TokenKind::U64 => Some("u64"),
+            TokenKind::U128 => Some("u128"),
+            TokenKind::F32 => Some("f32"),
+            TokenKind::F64 => Some("f64"),
+            TokenKind::Bool => Some("bool"),
+            TokenKind::Char => Some("char"),
+            TokenKind::Str => Some("str"),
             TokenKind::Some => Some("Some"),
             TokenKind::None => Some("None"),
             TokenKind::Ok => Some("Ok"),

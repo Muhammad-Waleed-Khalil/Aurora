@@ -130,7 +130,7 @@ impl Lexer {
         }
 
         // Operators (with maximal-munch)
-        if let Some((kind, len)) = MaximalMunch::match_operator(self.remaining_str()) {
+        if let Some((kind, len)) = MaximalMunch::match_operator(&self.remaining_str()) {
             let lexeme: String = self.source[self.pos..self.pos + len].iter().collect();
             self.advance_n(len);
             return Ok(Token::new(kind, lexeme, self.file.clone(), start_line, start_column));
@@ -174,6 +174,11 @@ impl Lexer {
         }
 
         let lexeme: String = self.source[start_pos..self.pos].iter().collect();
+
+        // Check if it's exactly underscore (special token)
+        if lexeme == "_" {
+            return Ok(Token::new(TokenKind::Underscore, lexeme, self.file.clone(), start_line, start_column));
+        }
 
         // Check if it's a keyword
         let kind = self.keywords.lookup(&lexeme).unwrap_or(TokenKind::Ident);
@@ -445,14 +450,8 @@ impl Lexer {
     }
 
     /// Get remaining source as string (for operator matching)
-    fn remaining_str(&self) -> &str {
-        // This is a bit hacky but works for our purposes
-        static mut BUFFER: String = String::new();
-        unsafe {
-            BUFFER.clear();
-            BUFFER.extend(self.source[self.pos..].iter());
-            &BUFFER
-        }
+    fn remaining_str(&self) -> String {
+        self.source[self.pos..].iter().collect()
     }
 
     /// Advance by one character
@@ -574,5 +573,233 @@ mod tests {
         // Should successfully tokenize a complete program
         assert!(tokens.len() > 10);
         assert_eq!(tokens.last().unwrap().kind, TokenKind::Eof);
+    }
+
+    #[test]
+    fn test_lexer_primitive_types() {
+        let source = "i8 i16 i32 i64 i128 u8 u16 u32 u64 u128 f32 f64 bool char str";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].kind, TokenKind::I8);
+        assert_eq!(tokens[1].kind, TokenKind::I16);
+        assert_eq!(tokens[2].kind, TokenKind::I32);
+        assert_eq!(tokens[3].kind, TokenKind::I64);
+        assert_eq!(tokens[4].kind, TokenKind::I128);
+        assert_eq!(tokens[5].kind, TokenKind::U8);
+        assert_eq!(tokens[6].kind, TokenKind::U16);
+        assert_eq!(tokens[7].kind, TokenKind::U32);
+        assert_eq!(tokens[8].kind, TokenKind::U64);
+        assert_eq!(tokens[9].kind, TokenKind::U128);
+        assert_eq!(tokens[10].kind, TokenKind::F32);
+        assert_eq!(tokens[11].kind, TokenKind::F64);
+        assert_eq!(tokens[12].kind, TokenKind::Bool);
+        assert_eq!(tokens[13].kind, TokenKind::Char);
+        assert_eq!(tokens[14].kind, TokenKind::Str);
+    }
+
+    #[test]
+    fn test_lexer_underscore() {
+        let source = "_ _foo foo_";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].kind, TokenKind::Underscore);
+        assert_eq!(tokens[0].lexeme, "_");
+        assert_eq!(tokens[1].kind, TokenKind::Ident);
+        assert_eq!(tokens[1].lexeme, "_foo");
+        assert_eq!(tokens[2].kind, TokenKind::Ident);
+        assert_eq!(tokens[2].lexeme, "foo_");
+    }
+
+    #[test]
+    fn test_lexer_all_keywords() {
+        let source = "if else match for while loop break continue return yield \
+                      fn let mut const static type trait impl where in \
+                      use mod pub as self Self super crate async await \
+                      defer unsafe comptime true false Some None Ok Err unreachable";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        // Verify all are keywords, not identifiers
+        for token in &tokens {
+            if token.kind != TokenKind::Eof {
+                assert!(token.kind.is_keyword(), "Expected keyword, got {:?}", token);
+            }
+        }
+    }
+
+    #[test]
+    fn test_lexer_hello_world() {
+        let source = r#"fn main() {
+    println("Hello, World!");
+    println("Welcome to Aurora!");
+}"#;
+        let mut lexer = Lexer::new(source, "hello_world.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        // Print all tokens for verification
+        eprintln!("\n=== Hello World Tokenization ===");
+        for (i, token) in tokens.iter().enumerate() {
+            eprintln!("{:3}: {:?} '{}' at {}:{}",
+                     i, token.kind, token.lexeme, token.line, token.column);
+        }
+        eprintln!("=== Total: {} tokens ===\n", tokens.len());
+
+        // Verify it tokenizes without errors
+        assert!(tokens.len() > 0);
+        assert_eq!(tokens.last().unwrap().kind, TokenKind::Eof);
+
+        // Spot-check some tokens
+        assert_eq!(tokens[0].kind, TokenKind::Fn);
+        assert_eq!(tokens[1].kind, TokenKind::Ident);
+        assert_eq!(tokens[1].lexeme, "main");
+        assert_eq!(tokens[2].kind, TokenKind::LParen);
+        assert_eq!(tokens[3].kind, TokenKind::RParen);
+        assert_eq!(tokens[4].kind, TokenKind::LBrace);
+    }
+
+    #[test]
+    fn test_lexer_maximal_munch_complete() {
+        // Test that maximal-munch works correctly for all multi-char operators
+        let source = "... ..= .. :: -> => ?? |> <| == != <= >= && || << >> \
+                      += -= *= /= %= &= |= ^= <<= >>=";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        let expected = vec![
+            TokenKind::DotDotDot,
+            TokenKind::DotDotEq,
+            TokenKind::DotDot,
+            TokenKind::ColonColon,
+            TokenKind::RArrow,
+            TokenKind::FatArrow,
+            TokenKind::QuestionQuestion,
+            TokenKind::PipeGt,
+            TokenKind::LtPipe,
+            TokenKind::EqEq,
+            TokenKind::NotEq,
+            TokenKind::LtEq,
+            TokenKind::GtEq,
+            TokenKind::AndAnd,
+            TokenKind::OrOr,
+            TokenKind::LtLt,
+            TokenKind::GtGt,
+            TokenKind::PlusEq,
+            TokenKind::MinusEq,
+            TokenKind::StarEq,
+            TokenKind::SlashEq,
+            TokenKind::PercentEq,
+            TokenKind::AndEq,
+            TokenKind::OrEq,
+            TokenKind::CaretEq,
+            TokenKind::LtLtEq,
+            TokenKind::GtGtEq,
+            TokenKind::Eof,
+        ];
+
+        for (i, expected_kind) in expected.iter().enumerate() {
+            assert_eq!(
+                tokens[i].kind, *expected_kind,
+                "Token {} mismatch: expected {:?}, got {:?}",
+                i, expected_kind, tokens[i].kind
+            );
+        }
+    }
+
+    #[test]
+    fn test_lexer_nested_block_comments() {
+        let source = "/* outer /* inner */ still in outer */";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens.len(), 2); // Comment + EOF
+        assert_eq!(tokens[0].kind, TokenKind::BlockComment);
+    }
+
+    #[test]
+    fn test_lexer_escape_sequences() {
+        let source = r#""hello\nworld" "tab\there" "quote\"inside""#;
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].kind, TokenKind::StringLiteral);
+        assert_eq!(tokens[1].kind, TokenKind::StringLiteral);
+        assert_eq!(tokens[2].kind, TokenKind::StringLiteral);
+    }
+
+    #[test]
+    fn test_lexer_utf8_identifiers() {
+        // Test Unicode identifiers (XID-compliant)
+        let source = "café naïve 变量 переменная";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].kind, TokenKind::Ident);
+        assert_eq!(tokens[0].lexeme, "café");
+        assert_eq!(tokens[1].kind, TokenKind::Ident);
+        assert_eq!(tokens[1].lexeme, "naïve");
+        assert_eq!(tokens[2].kind, TokenKind::Ident);
+        assert_eq!(tokens[2].lexeme, "变量");
+        assert_eq!(tokens[3].kind, TokenKind::Ident);
+        assert_eq!(tokens[3].lexeme, "переменная");
+    }
+
+    #[test]
+    fn test_lexer_line_tracking() {
+        let source = "fn\nmain\n(\n)\n{\n}";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].line, 1); // fn
+        assert_eq!(tokens[1].line, 2); // main
+        assert_eq!(tokens[2].line, 3); // (
+        assert_eq!(tokens[3].line, 4); // )
+        assert_eq!(tokens[4].line, 5); // {
+        assert_eq!(tokens[5].line, 6); // }
+    }
+
+    #[test]
+    fn test_lexer_number_formats() {
+        let source = "42 3.14 2.5e10 1.0e-5 0xFF 0b1010 0o755 1_000_000";
+        let mut lexer = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens = lexer.lex_all().unwrap();
+
+        assert_eq!(tokens[0].kind, TokenKind::IntLiteral);
+        assert_eq!(tokens[0].lexeme, "42");
+        assert_eq!(tokens[1].kind, TokenKind::FloatLiteral);
+        assert_eq!(tokens[1].lexeme, "3.14");
+        assert_eq!(tokens[2].kind, TokenKind::FloatLiteral);
+        assert_eq!(tokens[2].lexeme, "2.5e10");
+        assert_eq!(tokens[3].kind, TokenKind::FloatLiteral);
+        assert_eq!(tokens[3].lexeme, "1.0e-5");
+        assert_eq!(tokens[4].kind, TokenKind::IntLiteral);
+        assert_eq!(tokens[4].lexeme, "0xFF");
+        assert_eq!(tokens[5].kind, TokenKind::IntLiteral);
+        assert_eq!(tokens[5].lexeme, "0b1010");
+        assert_eq!(tokens[6].kind, TokenKind::IntLiteral);
+        assert_eq!(tokens[6].lexeme, "0o755");
+        assert_eq!(tokens[7].kind, TokenKind::IntLiteral);
+        assert_eq!(tokens[7].lexeme, "1_000_000");
+    }
+
+    #[test]
+    fn test_lexer_determinism() {
+        // The lexer should produce identical results for the same input
+        let source = "fn main() { let x = 42; }";
+
+        let mut lexer1 = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens1 = lexer1.lex_all().unwrap();
+
+        let mut lexer2 = Lexer::new(source, "test.ax".to_string()).unwrap();
+        let tokens2 = lexer2.lex_all().unwrap();
+
+        assert_eq!(tokens1.len(), tokens2.len());
+        for (t1, t2) in tokens1.iter().zip(tokens2.iter()) {
+            assert_eq!(t1.kind, t2.kind);
+            assert_eq!(t1.lexeme, t2.lexeme);
+            assert_eq!(t1.line, t2.line);
+            assert_eq!(t1.column, t2.column);
+        }
     }
 }

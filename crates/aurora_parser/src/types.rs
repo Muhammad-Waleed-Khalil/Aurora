@@ -205,20 +205,20 @@ mod tests {
     fn test_parse_int_type() {
         let source = "fn test() -> i32 {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_tuple_type() {
         let source = "fn test() -> (i32, f64) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
-    
+
     #[test]
     fn test_parse_ref_type() {
         let source = "fn test(x: &i32, y: &mut String) {}";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (_program, _arena) = parser.parse().unwrap();
+        let (_program, _arena) = parser.parse_program().unwrap();
     }
 }

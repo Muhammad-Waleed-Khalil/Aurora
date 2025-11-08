@@ -228,7 +228,7 @@ impl BorrowChecker {
     }
 
     /// Check if two paths overlap
-    fn paths_overlap(&self, p1: &str, p2: &str) -> bool {
+    pub fn paths_overlap(&self, p1: &str, p2: &str) -> bool {
         // Simplified: exact match or prefix
         p1 == p2 || p1.starts_with(&format!("{}.", p2)) || p2.starts_with(&format!("{}.", p1))
     }
