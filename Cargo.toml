@@ -21,6 +21,7 @@ members = [
     "crates/aurora_security",
     "crates/aurora_docs",
     "runtime",
+    "stdlib",
 ]
 
 [workspace.package]
