@@ -1,0 +1,57 @@
+// Enums
+// Demonstrates enum definition, pattern matching, and option types
+
+enum Color {
+    Red,
+    Green,
+    Blue,
+    RGB(u8, u8, u8),
+}
+
+impl Color {
+    fn to_string(&self) -> str {
+        match self {
+            Color::Red => "Red",
+            Color::Green => "Green",
+            Color::Blue => "Blue",
+            Color::RGB(r, g, b) => "RGB({}, {}, {})",
+        }
+    }
+}
+
+enum Message {
+    Quit,
+    Move { x: i32, y: i32 },
+    Write(str),
+    ChangeColor(Color),
+}
+
+fn process_message(msg: Message) {
+    match msg {
+        Message::Quit => {
+            println("Quitting...");
+        }
+        Message::Move { x, y } => {
+            println("Moving to ({}, {})", x, y);
+        }
+        Message::Write(text) => {
+            println("Writing: {}", text);
+        }
+        Message::ChangeColor(color) => {
+            println("Changing color to: {}", color.to_string());
+        }
+    }
+}
+
+fn main() {
+    let red = Color::Red;
+    let custom = Color::RGB(255, 128, 0);
+
+    println("Color: {}", red.to_string());
+    println("Custom color: {}", custom.to_string());
+
+    process_message(Message::Quit);
+    process_message(Message::Move { x: 10, y: 20 });
+    process_message(Message::Write("Hello"));
+    process_message(Message::ChangeColor(Color::Blue));
+}

@@ -1,0 +1,31 @@
+// Variables and Types
+// Demonstrates variable declaration, types, and basic operations
+
+fn main() {
+    // Integer types
+    let x: i32 = 42;
+    let y: i64 = 100;
+    let sum = x + y;
+
+    println("x = {}", x);
+    println("y = {}", y);
+    println("sum = {}", sum);
+
+    // Floating point
+    let pi: f64 = 3.14159;
+    let radius: f64 = 5.0;
+    let area = pi * radius * radius;
+
+    println("Circle area: {}", area);
+
+    // Boolean
+    let is_true: bool = true;
+    let is_false: bool = false;
+
+    println("is_true: {}", is_true);
+    println("is_false: {}", is_false);
+
+    // String
+    let message: str = "Aurora is awesome!";
+    println("{}", message);
+}

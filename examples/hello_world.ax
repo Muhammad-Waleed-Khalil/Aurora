@@ -1,0 +1,7 @@
+// Hello World - The traditional first program
+// Demonstrates basic println functionality
+
+fn main() {
+    println("Hello, World!");
+    println("Welcome to Aurora!");
+}
