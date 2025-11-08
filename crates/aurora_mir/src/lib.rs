@@ -1,22 +1,21 @@
-//! aurora_mir - Aurora Compiler Agent
+//! Aurora MIR (Mid-Level Intermediate Representation)
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! This crate provides the MIR for Aurora compiler:
+//! - SSA form representation
+//! - Control Flow Graph (CFG)
+//! - Dominance tree computation
+//! - MIR lowering from typed AST
+//! - Optimization passes
+//! - MIR dumps and serialization
 
-#![warn(missing_docs)]
-#![warn(clippy::all)]
+pub mod cfg;
+pub mod dump;
+pub mod lower;
+pub mod mir;
+pub mod opt;
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_mir initialized");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+pub use cfg::{DominatorTree, Loop, CFG};
+pub use dump::MirDumper;
+pub use lower::MirBuilder;
+pub use mir::*;
+pub use opt::*;
