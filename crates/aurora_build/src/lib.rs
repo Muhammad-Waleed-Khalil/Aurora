@@ -1,22 +1,29 @@
-//! aurora_build - Aurora Compiler Agent
+//! aurora_build - Build System and CLI
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! Implements the Aurora build tool, workspace management, and build profiles.
+//!
+//! # Example
+//!
+//! ```
+//! use aurora_build::workspace::{Manifest, PackageMetadata};
+//! use aurora_build::cli::{BuildArgs, Profile};
+//!
+//! // Create build arguments
+//! let args = BuildArgs {
+//!     profile: Profile::Release,
+//!     ..Default::default()
+//! };
+//! ```
 
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_build initialized");
-}
+/// Command-line interface
+pub mod cli;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// Workspace and package management
+pub mod workspace;
 
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export main types
+pub use cli::{BuildArgs, Command, Profile, TestArgs};
+pub use workspace::{BuildCache, BuildError, Dependency, Manifest, PackageMetadata, Result};

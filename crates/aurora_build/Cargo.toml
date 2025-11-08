@@ -10,3 +10,5 @@ clap.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 toml = "0.8"
+num_cpus = "1.16"
+thiserror.workspace = true

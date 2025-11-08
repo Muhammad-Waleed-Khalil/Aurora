@@ -1,22 +1,30 @@
-//! aurora_diagnostics - Aurora Compiler Agent
+//! aurora_diagnostics - Structured Diagnostics and LSP
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! Provides JSON diagnostics, fix-its, and Language Server Protocol support.
+//!
+//! # Example
+//!
+//! ```
+//! use aurora_diagnostics::diagnostic::{Diagnostic, Severity, Span};
+//!
+//! let span = Span::new(0, 10, 0);
+//! let diag = Diagnostic::error("E0001", "undefined variable")
+//!     .with_span(span)
+//!     .with_note("consider declaring the variable");
+//! ```
 
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_diagnostics initialized");
-}
+/// Diagnostic system
+pub mod diagnostic;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// Language Server Protocol support
+pub mod lsp;
 
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export main types
+pub use diagnostic::{Diagnostic, DiagnosticCollector, FixIt, Label, Severity, Span};
+pub use lsp::{
+    CodeAction, CompletionItem, CompletionKind, DocumentSymbol, Hover, Position, Range,
+    SymbolKind, TextEdit,
+};
