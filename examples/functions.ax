@@ -1,0 +1,46 @@
+// Functions
+// Demonstrates function declaration, parameters, and return values
+
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+fn subtract(a: i32, b: i32) -> i32 {
+    a - b
+}
+
+fn multiply(a: i32, b: i32) -> i32 {
+    a * b
+}
+
+fn divide(a: i32, b: i32) -> Result<i32, str> {
+    if b == 0 {
+        Err("Division by zero")
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn factorial(n: i32) -> i32 {
+    if n <= 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
+
+fn main() {
+    let x = 10;
+    let y = 5;
+
+    println("add({}, {}) = {}", x, y, add(x, y));
+    println("subtract({}, {}) = {}", x, y, subtract(x, y));
+    println("multiply({}, {}) = {}", x, y, multiply(x, y));
+
+    match divide(x, y) {
+        Ok(result) => println("divide({}, {}) = {}", x, y, result),
+        Err(e) => println("Error: {}", e),
+    }
+
+    println("factorial(5) = {}", factorial(5));
+}

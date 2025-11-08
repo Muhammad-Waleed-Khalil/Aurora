@@ -1,0 +1,16 @@
+[package]
+name = "aurora_runtime"
+version = "0.1.0"
+edition = "2021"
+authors = ["Aurora Team"]
+license = "MIT"
+
+[lib]
+crate-type = ["staticlib", "rlib"]
+
+[dependencies]
+libc = "0.2"
+
+[features]
+default = []
+debug_allocator = []  # Track allocations in debug mode

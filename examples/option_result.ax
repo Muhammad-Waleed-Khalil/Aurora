@@ -1,0 +1,71 @@
+// Option and Result Types
+// Demonstrates null-safety with Option and error handling with Result
+
+fn divide(a: i32, b: i32) -> Result<i32, str> {
+    if b == 0 {
+        Err("Cannot divide by zero")
+    } else {
+        Ok(a / b)
+    }
+}
+
+fn find_element(arr: [i32], target: i32) -> Option<usize> {
+    for i in 0..arr.len() {
+        if arr[i] == target {
+            return Some(i);
+        }
+    }
+    None
+}
+
+fn parse_positive_int(s: str) -> Result<i32, str> {
+    // Simplified parsing example
+    match s {
+        "0" => Ok(0),
+        "1" => Ok(1),
+        "10" => Ok(10),
+        "42" => Ok(42),
+        "100" => Ok(100),
+        _ => Err("Failed to parse"),
+    }
+}
+
+fn main() {
+    // Result examples
+    match divide(10, 2) {
+        Ok(result) => println("10 / 2 = {}", result),
+        Err(e) => println("Error: {}", e),
+    }
+
+    match divide(10, 0) {
+        Ok(result) => println("10 / 0 = {}", result),
+        Err(e) => println("Error: {}", e),
+    }
+
+    // Option examples
+    let numbers = [1, 2, 3, 4, 5];
+
+    match find_element(numbers, 3) {
+        Some(index) => println("Found 3 at index {}", index),
+        None => println("3 not found"),
+    }
+
+    match find_element(numbers, 10) {
+        Some(index) => println("Found 10 at index {}", index),
+        None => println("10 not found"),
+    }
+
+    // Chaining operations
+    let result = parse_positive_int("42")
+        .and_then(|n| divide(n, 2))
+        .map(|n| n * 2);
+
+    match result {
+        Ok(val) => println("Result: {}", val),
+        Err(e) => println("Error: {}", e),
+    }
+
+    // Using unwrap_or for defaults
+    let value = parse_positive_int("invalid").unwrap_or(0);
+    println("Parsed value (or default): {}", value);
+}
