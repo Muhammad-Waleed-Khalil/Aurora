@@ -22,6 +22,9 @@ pub mod diagnostic;
 /// Language Server Protocol support
 pub mod lsp;
 
+/// Effects compatibility layer
+pub mod effects_compat;
+
 // Re-export main types
 pub use diagnostic::{Diagnostic, DiagnosticCollector, FixIt, Label, Severity, Span};
 pub use lsp::{

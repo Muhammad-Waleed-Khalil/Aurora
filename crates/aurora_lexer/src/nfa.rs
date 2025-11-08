@@ -120,6 +120,7 @@ impl KeywordTable {
     /// Create a new keyword table
     pub fn new() -> Self {
         let mut keywords = HashMap::new();
+        // Control flow keywords
         keywords.insert("if", TokenKind::If);
         keywords.insert("else", TokenKind::Else);
         keywords.insert("match", TokenKind::Match);
@@ -130,6 +131,8 @@ impl KeywordTable {
         keywords.insert("continue", TokenKind::Continue);
         keywords.insert("return", TokenKind::Return);
         keywords.insert("yield", TokenKind::Yield);
+
+        // Declaration keywords
         keywords.insert("fn", TokenKind::Fn);
         keywords.insert("let", TokenKind::Let);
         keywords.insert("mut", TokenKind::Mut);
@@ -138,21 +141,52 @@ impl KeywordTable {
         keywords.insert("type", TokenKind::Type);
         keywords.insert("trait", TokenKind::Trait);
         keywords.insert("impl", TokenKind::Impl);
+        keywords.insert("where", TokenKind::Where);
+        keywords.insert("in", TokenKind::In);
+
+        // Module keywords
         keywords.insert("use", TokenKind::Use);
         keywords.insert("mod", TokenKind::Mod);
         keywords.insert("pub", TokenKind::Pub);
         keywords.insert("as", TokenKind::As);
+
+        // Self keywords
         keywords.insert("self", TokenKind::SelfLower);
         keywords.insert("Self", TokenKind::SelfUpper);
         keywords.insert("super", TokenKind::Super);
         keywords.insert("crate", TokenKind::Crate);
+
+        // Async keywords
         keywords.insert("async", TokenKind::Async);
         keywords.insert("await", TokenKind::Await);
+
+        // Memory/effect keywords
         keywords.insert("defer", TokenKind::Defer);
         keywords.insert("unsafe", TokenKind::Unsafe);
         keywords.insert("comptime", TokenKind::Comptime);
+
+        // Boolean literals
         keywords.insert("true", TokenKind::True);
         keywords.insert("false", TokenKind::False);
+
+        // Primitive types
+        keywords.insert("i8", TokenKind::I8);
+        keywords.insert("i16", TokenKind::I16);
+        keywords.insert("i32", TokenKind::I32);
+        keywords.insert("i64", TokenKind::I64);
+        keywords.insert("i128", TokenKind::I128);
+        keywords.insert("u8", TokenKind::U8);
+        keywords.insert("u16", TokenKind::U16);
+        keywords.insert("u32", TokenKind::U32);
+        keywords.insert("u64", TokenKind::U64);
+        keywords.insert("u128", TokenKind::U128);
+        keywords.insert("f32", TokenKind::F32);
+        keywords.insert("f64", TokenKind::F64);
+        keywords.insert("bool", TokenKind::Bool);
+        keywords.insert("char", TokenKind::Char);
+        keywords.insert("str", TokenKind::Str);
+
+        // Option/Result variants
         keywords.insert("Some", TokenKind::Some);
         keywords.insert("None", TokenKind::None);
         keywords.insert("Ok", TokenKind::Ok);

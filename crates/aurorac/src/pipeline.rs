@@ -17,6 +17,7 @@ use aurora_nameres::NameResolver;
 use aurora_parser::Parser;
 use aurora_types::TypeChecker;
 use std::fs;
+use std::sync::Arc;
 use tracing::{debug, info, warn};
 
 /// The main compilation pipeline
@@ -139,7 +140,11 @@ impl<'sess> Pipeline<'sess> {
     fn check_effects(&mut self, ast: Ast) -> Result<Ast> {
         info!("Phase 5: Effect checking");
 
-        let mut checker = EffectChecker::new(self.session.diagnostics.clone());
+        // Create adapter for effects diagnostic collector
+        let adapter = Arc::new(aurora_diagnostics::effects_compat::EffectsDiagnosticAdapter::new(
+            self.session.diagnostics.clone()
+        ));
+        let mut checker = EffectChecker::new(adapter);
         let checked = checker.check(ast);
 
         if self.session.options.verbose {
@@ -204,6 +209,8 @@ impl<'sess> Pipeline<'sess> {
             emit_llvm: self.session.options.emit_llvm,
             codegen_units: self.session.options.codegen_units,
             output_path: self.session.options.output_path(),
+            keep_intermediates: false,
+            target_triple: Some("x86_64-unknown-linux-gnu".to_string()),
         };
 
         aurora_backend::generate_code(

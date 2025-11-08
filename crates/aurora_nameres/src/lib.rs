@@ -48,18 +48,19 @@ pub use hygiene::{ExpansionContext, HygieneBinding, HygieneContext, HygieneResol
 pub use modules::{
     DependencyKind, Module, ModuleDependency, ModuleError, ModuleGraph, ModuleId, ModulePath,
 };
-pub use resolver::{ResolutionError, ResolutionMap, ResolutionResult, Resolver};
+pub use resolver::{ResolutionChain, ResolutionError, ResolutionMap, ResolutionResult, Resolver};
 pub use scopes::{Scope, ScopeId, ScopeKind, ScopeTree};
 pub use symbols::{Symbol, SymbolId, SymbolKind, SymbolTable, Visibility};
 
-// Pipeline integration stub
-use aurora_ast::Ast;
+// Pipeline integration
+use aurora_ast::{Arena, Ast};
 use std::sync::Arc;
 
 /// Name resolver for pipeline integration
 pub struct NameResolver {
     diagnostics: Arc<dyn Send + Sync>,
-    symbol_count: usize,
+    /// Resolution result (populated after resolve() is called)
+    result: Option<ResolutionResult>,
 }
 
 impl NameResolver {
@@ -67,20 +68,69 @@ impl NameResolver {
     pub fn new<D: Send + Sync + 'static>(diagnostics: Arc<D>) -> Self {
         Self {
             diagnostics: diagnostics as Arc<dyn Send + Sync>,
-            symbol_count: 0,
+            result: None,
         }
     }
 
     /// Resolve names in the AST
+    ///
+    /// Note: This requires access to the Arena. For now, this is a stub that
+    /// will be integrated properly when the pipeline provides Arena access.
     pub fn resolve(&mut self, ast: Ast) -> Ast {
-        // TODO: Implement actual name resolution
+        // TODO: Once the pipeline provides Arena access, we can do:
+        // let arena = ...; // Need arena from pipeline
+        // let resolver = Resolver::new(arena, "crate_name".to_string());
+        // self.result = Some(resolver.resolve(&ast));
+
         // For now, just return the AST unchanged
-        self.symbol_count = ast.items.len();
         ast
+    }
+
+    /// Resolve names with explicit arena access
+    ///
+    /// This is the full resolution implementation that requires the arena.
+    pub fn resolve_with_arena(&mut self, ast: &Ast, arena: &Arena, crate_name: String) -> ResolutionResult {
+        let resolver = Resolver::new(arena, crate_name);
+        let result = resolver.resolve(ast);
+
+        // Store result for later access
+        self.result = Some(result.clone());
+
+        result
     }
 
     /// Get the number of resolved symbols
     pub fn symbol_count(&self) -> usize {
-        self.symbol_count
+        self.result.as_ref().map(|r| r.symbols.len()).unwrap_or(0)
+    }
+
+    /// Get the resolution result
+    pub fn resolution_result(&self) -> Option<&ResolutionResult> {
+        self.result.as_ref()
+    }
+
+    /// Get the symbol table
+    pub fn symbols(&self) -> Option<&SymbolTable> {
+        self.result.as_ref().map(|r| &r.symbols)
+    }
+
+    /// Get the scope tree
+    pub fn scopes(&self) -> Option<&ScopeTree> {
+        self.result.as_ref().map(|r| &r.scopes)
+    }
+
+    /// Get the module graph
+    pub fn modules(&self) -> Option<&ModuleGraph> {
+        self.result.as_ref().map(|r| &r.modules)
+    }
+
+    /// Get the resolution map
+    pub fn resolution_map(&self) -> Option<&ResolutionMap> {
+        self.result.as_ref().map(|r| &r.resolution_map)
+    }
+
+    /// Get diagnostics
+    pub fn diagnostics(&self) -> Vec<ResolutionError> {
+        self.result.as_ref().map(|r| r.diagnostics.clone()).unwrap_or_default()
     }
 }

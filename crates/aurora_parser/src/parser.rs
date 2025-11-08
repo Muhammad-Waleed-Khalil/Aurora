@@ -257,7 +257,7 @@ mod tests {
     fn test_empty_program() {
         let source = "";
         let parser = Parser::new(source, "test.ax".to_string()).unwrap();
-        let (program, _arena) = parser.parse().unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
         assert!(program.items.is_empty());
     }
 
@@ -273,5 +273,357 @@ mod tests {
         }];
         let parser = Parser::from_tokens(tokens);
         assert!(parser.is_at_end());
+    }
+
+    #[test]
+    fn test_hello_world() {
+        let source = r#"
+fn main() {
+    println("Hello, World!");
+    println("Welcome to Aurora!");
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_function_with_params() {
+        let source = r#"
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_if_expression() {
+        let source = r#"
+fn test() -> i32 {
+    if true {
+        1
+    } else {
+        2
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_match_expression() {
+        let source = r#"
+fn test(x: i32) {
+    match x {
+        1 => println("One"),
+        2 => println("Two"),
+        _ => println("Other"),
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_while_loop() {
+        let source = r#"
+fn test() {
+    let mut i = 0;
+    while i < 5 {
+        println("i = {}", i);
+        i = i + 1;
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_for_loop() {
+        let source = r#"
+fn test() {
+    for i in 0..5 {
+        println("i = {}", i);
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_loop_with_break() {
+        let source = r#"
+fn test() {
+    loop {
+        break;
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_impl_block() {
+        let source = r#"
+impl Point {
+    fn new(x: f64, y: f64) -> Point {
+        Point { x, y }
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_binary_operations() {
+        let source = r#"
+fn test() {
+    let a = 1 + 2;
+    let b = 3 - 4;
+    let c = 5 * 6;
+    let d = 7 / 8;
+    let e = 9 % 10;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_comparison_operations() {
+        let source = r#"
+fn test() {
+    let a = 1 == 2;
+    let b = 3 != 4;
+    let c = 5 < 6;
+    let d = 7 <= 8;
+    let e = 9 > 10;
+    let f = 11 >= 12;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_logical_operations() {
+        let source = r#"
+fn test() {
+    let a = true && false;
+    let b = true || false;
+    let c = !true;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_method_calls() {
+        let source = r#"
+fn test() {
+    let x = p1.distance_to(&p2);
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_field_access() {
+        let source = r#"
+fn test() {
+    let x = point.x;
+    let y = point.y;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_struct_literal() {
+        let source = r#"
+fn test() {
+    let p = Point { x: 1.0, y: 2.0 };
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_struct_literal_shorthand() {
+        let source = r#"
+fn test() {
+    let x = 1.0;
+    let y = 2.0;
+    let p = Point { x, y };
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_path_expression() {
+        let source = r#"
+fn test() {
+    Point::new(1.0, 2.0);
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_range_expression() {
+        let source = r#"
+fn test() {
+    for i in 0..10 {
+        println("{}", i);
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_array_literal() {
+        let source = r#"
+fn test() {
+    let arr = [1, 2, 3, 4, 5];
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_tuple_literal() {
+        let source = r#"
+fn test() {
+    let t = (1, 2, 3);
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_return_statement() {
+        let source = r#"
+fn test() -> i32 {
+    return 42;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_precedence() {
+        let source = r#"
+fn test() {
+    let x = 1 + 2 * 3;
+    let y = (1 + 2) * 3;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_complex_expressions() {
+        let source = r#"
+fn factorial(n: i32) -> i32 {
+    if n <= 1 {
+        1
+    } else {
+        n * factorial(n - 1)
+    }
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_multiple_functions() {
+        let source = r#"
+fn add(a: i32, b: i32) -> i32 {
+    a + b
+}
+
+fn subtract(a: i32, b: i32) -> i32 {
+    a - b
+}
+
+fn main() {
+    let x = add(5, 3);
+    let y = subtract(10, 4);
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 3);
+    }
+
+    #[test]
+    fn test_type_annotations() {
+        let source = r#"
+fn test() {
+    let x: i32 = 42;
+    let y: f64 = 3.14;
+    let z: bool = true;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
+    }
+
+    #[test]
+    fn test_mutable_bindings() {
+        let source = r#"
+fn test() {
+    let mut x = 0;
+    x = x + 1;
+}
+"#;
+        let parser = Parser::new(source, "test.ax".to_string()).unwrap();
+        let (program, _arena) = parser.parse_program().unwrap();
+        assert_eq!(program.items.len(), 1);
     }
 }
