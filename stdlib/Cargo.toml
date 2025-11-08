@@ -1,0 +1,17 @@
+[package]
+name = "aurora_stdlib"
+version = "0.1.0"
+edition = "2021"
+authors = ["Aurora Team"]
+license = "MIT"
+description = "Aurora standard library - Core types and functionality"
+
+[lib]
+crate-type = ["rlib"]
+
+[dependencies]
+aurora_runtime = { path = "../runtime" }
+
+[features]
+default = []
+alloc = []  # Heap allocation support
