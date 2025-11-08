@@ -67,7 +67,7 @@ pub struct FixIt {
 }
 
 /// Diagnostic message
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Diagnostic {
     /// Severity level
     pub severity: Severity,
@@ -86,7 +86,7 @@ pub struct Diagnostic {
 }
 
 /// Label for additional context
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Label {
     /// Label span
     pub span: Span,
@@ -210,6 +210,121 @@ impl DiagnosticCollector {
             })
         });
     }
+
+    /// Emit all diagnostics to stderr
+    ///
+    /// This formats and prints all diagnostics in a user-friendly format
+    /// with source code context.
+    pub fn emit(&self, source: &str, path: &std::path::Path) {
+        use std::io::{self, Write};
+
+        // Sort diagnostics first
+        let mut sorted = self.diagnostics.clone();
+        sorted.sort_by(|a, b| {
+            a.severity.cmp(&b.severity).then_with(|| {
+                match (a.span, b.span) {
+                    (Some(s1), Some(s2)) => s1.start.cmp(&s2.start),
+                    _ => std::cmp::Ordering::Equal,
+                }
+            })
+        });
+
+        let stderr = io::stderr();
+        let mut handle = stderr.lock();
+
+        for diag in &sorted {
+            // Print severity and message
+            let color = match diag.severity {
+                Severity::Error => "\x1b[31;1m",     // Red
+                Severity::Warning => "\x1b[33;1m",   // Yellow
+                Severity::Note => "\x1b[36;1m",      // Cyan
+                Severity::Help => "\x1b[32;1m",      // Green
+            };
+            let reset = "\x1b[0m";
+
+            let _ = writeln!(
+                handle,
+                "{}{}: {}{}: {}",
+                color,
+                diag.severity,
+                diag.code,
+                reset,
+                diag.message
+            );
+
+            // Print location if available
+            if let Some(span) = diag.span {
+                let (line, col) = get_line_col(source, span.start);
+                let _ = writeln!(
+                    handle,
+                    "  {} {}:{}:{}",
+                    "-->",
+                    path.display(),
+                    line,
+                    col
+                );
+
+                // Print source context
+                print_source_context(&mut handle, source, span);
+            }
+
+            // Print notes
+            for note in &diag.notes {
+                let _ = writeln!(handle, "  {} note: {}", "=", note);
+            }
+
+            // Print fix-its
+            for fix in &diag.fixes {
+                let _ = writeln!(handle, "  {} help: {}", "=", fix.description);
+            }
+
+            let _ = writeln!(handle);
+        }
+    }
+}
+
+/// Get line and column from byte offset
+fn get_line_col(source: &str, offset: usize) -> (usize, usize) {
+    let mut line = 1;
+    let mut col = 1;
+
+    for (i, ch) in source.chars().enumerate() {
+        if i >= offset {
+            break;
+        }
+        if ch == '\n' {
+            line += 1;
+            col = 1;
+        } else {
+            col += 1;
+        }
+    }
+
+    (line, col)
+}
+
+/// Print source context for a span
+fn print_source_context(handle: &mut dyn std::io::Write, source: &str, span: Span) {
+    let (start_line, _) = get_line_col(source, span.start);
+
+    // Get the line containing the span
+    let line_text = source.lines().nth(start_line - 1).unwrap_or("");
+
+    // Print line number and source
+    let _ = writeln!(handle, "{:5} | {}", start_line, line_text);
+
+    // Print underline
+    let (_, start_col) = get_line_col(source, span.start);
+    let underline_len = span.len().max(1).min(line_text.len());
+
+    let _ = write!(handle, "      | ");
+    for _ in 0..start_col - 1 {
+        let _ = write!(handle, " ");
+    }
+    for _ in 0..underline_len {
+        let _ = write!(handle, "^");
+    }
+    let _ = writeln!(handle);
 }
 
 #[cfg(test)]

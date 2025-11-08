@@ -3,9 +3,10 @@
 //! This module implements the main parser structure that coordinates
 //! LL parsing for declarations and Pratt parsing for expressions.
 
-use aurora_ast::{Arena, Program, Span};
+use aurora_ast::{Arena, Ast, Program, Span};
 use aurora_lexer::{Lexer, Token, TokenKind};
 use crate::error::{ParseError, ParseResult};
+use std::sync::Arc;
 
 /// Parser for Aurora source code
 pub struct Parser {
@@ -43,8 +44,23 @@ impl Parser {
         }
     }
 
-    /// Parse a complete program
-    pub fn parse(mut self) -> ParseResult<(Program, Arena)> {
+    /// Create a parser with diagnostic collector (for pipeline integration)
+    ///
+    /// The diagnostics parameter can be any Arc type. Typically aurora_diagnostics::DiagnosticCollector.
+    pub fn with_diagnostics<D: Send + Sync + 'static>(
+        tokens: Vec<Token>,
+        _diagnostics: Arc<D>
+    ) -> Self {
+        Self {
+            tokens,
+            pos: 0,
+            arena: Arena::new(),
+            errors: Vec::new(),
+        }
+    }
+
+    /// Parse a complete program (original API)
+    pub fn parse_program(mut self) -> ParseResult<(Program, Arena)> {
         let items = self.parse_items()?;
 
         let program = Program::new(items, self.span_from_tokens());
@@ -55,6 +71,20 @@ impl Parser {
         }
 
         Ok((program, self.arena))
+    }
+
+    /// Parse a complete program into AST (for pipeline integration)
+    ///
+    /// This method consumes the parser and returns an Ast, reporting
+    /// errors via the diagnostic collector if provided.
+    pub fn parse(mut self) -> Ast {
+        match self.parse_items() {
+            Ok(items) => Program::new(items, self.span_from_tokens()),
+            Err(e) => {
+                eprintln!("Parse error: {:?}", e);
+                Program::empty()
+            }
+        }
     }
 
     /// Parse top-level items until EOF

@@ -58,3 +58,28 @@ pub use effects::{
 };
 pub use lifetimes::{Lifetime, LifetimeConstraint, LifetimeContext, LifetimeError, Region};
 pub use strict::{StrictChecker, StrictConfig, StrictError, StrictModeEnforcer};
+
+// Pipeline integration stub
+use aurora_ast::Ast;
+use std::sync::Arc;
+
+/// Effect checker for pipeline integration
+pub struct EffectChecker {
+    diagnostics: Arc<dyn Send + Sync>,
+}
+
+impl EffectChecker {
+    /// Create a new effect checker with diagnostic collector
+    pub fn new<D: Send + Sync + 'static>(diagnostics: Arc<D>) -> Self {
+        Self {
+            diagnostics: diagnostics as Arc<dyn Send + Sync>,
+        }
+    }
+
+    /// Check effects and borrow rules in the AST
+    pub fn check(&mut self, ast: Ast) -> Ast {
+        // TODO: Implement actual effect checking and borrow checking
+        // For now, just return the AST unchanged
+        ast
+    }
+}

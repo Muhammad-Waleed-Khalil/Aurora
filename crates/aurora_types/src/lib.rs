@@ -48,3 +48,28 @@ pub use infer::{InferContext, InferenceError, TypeEnv, TypeScheme};
 pub use traits::{AssocType, MethodSignature, Trait, TraitBound, TraitError, TraitImpl, TraitRegistry};
 pub use ty::{Constraint, EffectSet, Lifetime, PrimitiveType, Type, TypeId, TypeVarId};
 pub use unify::{Substitution, UnificationError};
+
+// Pipeline integration stub
+use aurora_ast::Ast;
+use std::sync::Arc;
+
+/// Type checker for pipeline integration
+pub struct TypeChecker {
+    diagnostics: Arc<dyn Send + Sync>,
+}
+
+impl TypeChecker {
+    /// Create a new type checker with diagnostic collector
+    pub fn new<D: Send + Sync + 'static>(diagnostics: Arc<D>) -> Self {
+        Self {
+            diagnostics: diagnostics as Arc<dyn Send + Sync>,
+        }
+    }
+
+    /// Type check the AST
+    pub fn check(&mut self, ast: Ast) -> Ast {
+        // TODO: Implement actual type checking with Hindley-Milner inference
+        // For now, just return the AST unchanged
+        ast
+    }
+}
