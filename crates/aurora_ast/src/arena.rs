@@ -160,6 +160,14 @@ impl Arena {
         }
     }
 
+    /// Get a block node by ID
+    pub fn get_block(&self, id: u32) -> Option<&crate::stmt::Block> {
+        match self.get(id)? {
+            AstNode::Block(block) => Some(block),
+            _ => None,
+        }
+    }
+
     /// Get the number of nodes in the arena
     pub fn len(&self) -> usize {
         self.nodes.len()
