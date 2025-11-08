@@ -1,22 +1,15 @@
-//! aurora_air - Aurora Compiler Agent
+//! Aurora AIR (Assembly Intermediate Representation)
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! AIR is a NASM-like assembly format that sits between MIR and machine code.
 
-#![warn(missing_docs)]
-#![warn(clippy::all)]
+pub mod air;
+pub mod emit;
+pub mod peephole;
+pub mod regalloc;
+pub mod schedule;
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_air initialized");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+pub use air::{AirFunction, AirModule, Instruction, Operand, Register};
+pub use emit::AirEmitter;
+pub use peephole::PeepholeOptimizer;
+pub use regalloc::RegisterAllocator;
+pub use schedule::{CpuProfile, InstructionScheduler};

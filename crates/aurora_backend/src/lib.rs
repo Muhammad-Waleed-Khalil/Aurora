@@ -1,22 +1,7 @@
-//! aurora_backend - Aurora Compiler Agent
-//!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! Aurora Backend - Code generation and linking
 
-#![warn(missing_docs)]
-#![warn(clippy::all)]
+pub mod link;
+pub mod llvm;
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_backend initialized");
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+pub use link::{LinkError, Linker};
+pub use llvm::{BackendError, LlvmBackend, OptLevel};
