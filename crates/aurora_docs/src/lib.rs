@@ -1,22 +1,26 @@
-//! aurora_docs - Aurora Compiler Agent
+//! aurora_docs - Documentation Generator for Aurora
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! Generates API documentation, language reference, and guides.
+//!
+//! # Example
+//!
+//! ```
+//! use aurora_docs::generator::{DocItem, DocKind, DocGenerator};
+//!
+//! // Create a doc item
+//! let item = DocItem::new("add", DocKind::Function, "Adds two numbers")
+//!     .with_example("add(1, 2) // Returns 3");
+//!
+//! // Create a generator
+//! let mut gen = DocGenerator::new("/tmp/docs");
+//! gen.add_item(item);
+//! ```
 
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_docs initialized");
-}
+/// Documentation generator module
+pub mod generator;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export main types
+pub use generator::{DocError, DocGenerator, DocItem, DocKind, Result};
