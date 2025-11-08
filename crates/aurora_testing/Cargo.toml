@@ -7,3 +7,5 @@ license.workspace = true
 
 [dependencies]
 proptest = "1.4"
+serde = { workspace = true }
+thiserror = { workspace = true }
