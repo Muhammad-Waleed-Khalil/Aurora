@@ -53,6 +53,9 @@ pub use span::{HygieneId, Span};
 pub use stmt::{Block, Stmt, StmtId, StmtKind};
 pub use ty::{Type, TypeId, TypeKind};
 
+/// Alias for Program (the complete AST)
+pub type Ast = Program;
+
 #[cfg(test)]
 mod tests {
     use super::*;

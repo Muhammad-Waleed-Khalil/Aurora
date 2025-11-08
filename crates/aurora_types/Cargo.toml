@@ -6,7 +6,7 @@ authors.workspace = true
 license.workspace = true
 
 [dependencies]
-# aurora_ast = { path = "../aurora_ast" }  # TODO: Re-enable when needed
+aurora_ast = { path = "../aurora_ast" }
 # aurora_nameres = { path = "../aurora_nameres" }  # TODO: Re-enable when resolver is fixed
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"

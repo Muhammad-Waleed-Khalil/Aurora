@@ -28,3 +28,6 @@ pub use lsp::{
     CodeAction, CompletionItem, CompletionKind, DocumentSymbol, Hover, Position, Range,
     SymbolKind, TextEdit,
 };
+
+// Alias for compatibility
+pub use Severity as DiagnosticLevel;

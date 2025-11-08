@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+aurora_ast = { path = "../aurora_ast" }
 aurora_types = { path = "../aurora_types" }
 serde = { version = "1.0", features = ["derive"] }
 thiserror = "2.0"

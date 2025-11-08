@@ -32,6 +32,14 @@ impl Program {
             span: Span::dummy(),
         }
     }
+
+    /// Get the number of top-level items (nodes) in this program
+    ///
+    /// Note: This returns the count of top-level items, not all AST nodes.
+    /// For a complete node count, you would need to traverse the entire tree.
+    pub fn node_count(&self) -> usize {
+        self.items.len()
+    }
 }
 
 /// Unified AST node type (for arena storage)

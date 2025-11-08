@@ -5,6 +5,7 @@
 
 use crate::nfa::{is_xid_continue, is_xid_start, KeywordTable, LexError, MaximalMunch};
 use crate::tokens::{Token, TokenKind};
+use std::sync::Arc;
 
 /// Aurora Lexer
 ///
@@ -23,10 +24,13 @@ pub struct Lexer {
     file: String,
     /// Keyword lookup table
     keywords: KeywordTable,
+    /// Optional diagnostic collector
+    #[allow(dead_code)]
+    diagnostics: Option<Arc<dyn std::any::Any + Send + Sync>>,
 }
 
 impl Lexer {
-    /// Create a new lexer from source code
+    /// Create a new lexer from source code (original API)
     pub fn new(source: &str, file: String) -> Result<Self, LexError> {
         // Validate UTF-8 (already done by Rust string, but we're explicit)
         let source: Vec<char> = source.chars().collect();
@@ -38,7 +42,42 @@ impl Lexer {
             column: 1,
             file,
             keywords: KeywordTable::new(),
+            diagnostics: None,
         })
+    }
+
+    /// Create a new lexer with diagnostic collector (for pipeline integration)
+    ///
+    /// The diagnostics parameter can be any Arc type. Typically aurora_diagnostics::DiagnosticCollector.
+    pub fn with_diagnostics<D: Send + Sync + 'static>(
+        source: &str,
+        diagnostics: Arc<D>
+    ) -> Self {
+        let source: Vec<char> = source.chars().collect();
+
+        Self {
+            source,
+            pos: 0,
+            line: 1,
+            column: 1,
+            file: "<input>".to_string(),
+            keywords: KeywordTable::new(),
+            diagnostics: Some(diagnostics as Arc<dyn std::any::Any + Send + Sync>),
+        }
+    }
+
+    /// Tokenize all source code (for pipeline integration)
+    ///
+    /// This is an alias for `lex_all()` that returns a Vec<Token> directly,
+    /// panicking on errors (errors will be reported via diagnostics).
+    pub fn tokenize(mut self) -> Vec<Token> {
+        match self.lex_all() {
+            Ok(tokens) => tokens,
+            Err(e) => {
+                eprintln!("Lexer error: {:?}", e);
+                vec![Token::eof("<error>".to_string(), 1, 1)]
+            }
+        }
     }
 
     /// Get the next token from the source

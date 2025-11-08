@@ -69,7 +69,7 @@ impl<'sess> Pipeline<'sess> {
     fn lex(&mut self) -> Result<Vec<aurora_lexer::Token>> {
         info!("Phase 1: Lexical analysis");
 
-        let lexer = Lexer::new(&self.session.source, self.session.diagnostics.clone());
+        let lexer = Lexer::with_diagnostics(&self.session.source, self.session.diagnostics.clone());
         let tokens = lexer.tokenize();
 
         if self.session.options.verbose {
@@ -84,7 +84,7 @@ impl<'sess> Pipeline<'sess> {
     fn parse(&mut self, tokens: Vec<aurora_lexer::Token>) -> Result<Ast> {
         info!("Phase 2: Parsing");
 
-        let parser = Parser::new(tokens, self.session.diagnostics.clone());
+        let parser = Parser::with_diagnostics(tokens, self.session.diagnostics.clone());
         let ast = parser.parse();
 
         if self.session.options.verbose {
@@ -259,12 +259,12 @@ pub fn check_syntax(session: &mut CompilationSession) -> Result<()> {
     info!("Running syntax check on {}", session.source_name());
 
     // Just lex and parse
-    let lexer = Lexer::new(&session.source, session.diagnostics.clone());
+    let lexer = Lexer::with_diagnostics(&session.source, session.diagnostics.clone());
     let tokens = lexer.tokenize();
 
     session.check_errors()?;
 
-    let parser = Parser::new(tokens, session.diagnostics.clone());
+    let parser = Parser::with_diagnostics(tokens, session.diagnostics.clone());
     let _ast = parser.parse();
 
     session.check_errors()?;

@@ -51,3 +51,36 @@ pub use modules::{
 pub use resolver::{ResolutionError, ResolutionMap, ResolutionResult, Resolver};
 pub use scopes::{Scope, ScopeId, ScopeKind, ScopeTree};
 pub use symbols::{Symbol, SymbolId, SymbolKind, SymbolTable, Visibility};
+
+// Pipeline integration stub
+use aurora_ast::Ast;
+use std::sync::Arc;
+
+/// Name resolver for pipeline integration
+pub struct NameResolver {
+    diagnostics: Arc<dyn Send + Sync>,
+    symbol_count: usize,
+}
+
+impl NameResolver {
+    /// Create a new name resolver with diagnostic collector
+    pub fn new<D: Send + Sync + 'static>(diagnostics: Arc<D>) -> Self {
+        Self {
+            diagnostics: diagnostics as Arc<dyn Send + Sync>,
+            symbol_count: 0,
+        }
+    }
+
+    /// Resolve names in the AST
+    pub fn resolve(&mut self, ast: Ast) -> Ast {
+        // TODO: Implement actual name resolution
+        // For now, just return the AST unchanged
+        self.symbol_count = ast.items.len();
+        ast
+    }
+
+    /// Get the number of resolved symbols
+    pub fn symbol_count(&self) -> usize {
+        self.symbol_count
+    }
+}
