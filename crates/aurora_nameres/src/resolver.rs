@@ -412,7 +412,7 @@ impl<'a> Resolver<'a> {
     /// Resolve a statement
     fn resolve_stmt(&mut self, stmt: &Stmt, _stmt_id: StmtId) {
         match &stmt.kind {
-            StmtKind::Let { pattern, ty: _, init } => {
+            StmtKind::Let { pattern, ty: _, init, mutable: _ } => {
                 // First resolve the init expression (RHS)
                 if let Some(init_expr) = init {
                     self.resolve_expr(*init_expr);
@@ -437,15 +437,15 @@ impl<'a> Resolver<'a> {
     fn resolve_expr(&mut self, expr_id: ExprId) {
         if let Some(expr) = self.arena.get_expr(expr_id) {
             match &expr.kind {
-                ExprKind::Ident { name } => {
+                ExprKind::Ident(name) => {
                     self.resolve_ident(name, expr.span, expr_id, expr.hygiene);
                 }
                 ExprKind::Binary { left, op: _, right } => {
                     self.resolve_expr(*left);
                     self.resolve_expr(*right);
                 }
-                ExprKind::Unary { op: _, expr } => {
-                    self.resolve_expr(*expr);
+                ExprKind::Unary { op: _, operand } => {
+                    self.resolve_expr(*operand);
                 }
                 ExprKind::Call { func, args } => {
                     self.resolve_expr(*func);
@@ -459,11 +459,11 @@ impl<'a> Resolver<'a> {
                         self.resolve_expr(arg);
                     }
                 }
-                ExprKind::Field { base, field: _ } => {
-                    self.resolve_expr(*base);
+                ExprKind::Field { object, field: _ } => {
+                    self.resolve_expr(*object);
                 }
-                ExprKind::Index { base, index } => {
-                    self.resolve_expr(*base);
+                ExprKind::Index { collection, index } => {
+                    self.resolve_expr(*collection);
                     self.resolve_expr(*index);
                 }
                 ExprKind::Tuple(exprs) => {
@@ -481,11 +481,15 @@ impl<'a> Resolver<'a> {
                         self.resolve_expr(field.value);
                     }
                 }
-                ExprKind::If { condition, then_branch, else_branch } => {
+                ExprKind::If { condition, then_block, else_block } => {
                     self.resolve_expr(*condition);
-                    self.resolve_block(then_branch);
-                    if let Some(else_block) = else_branch {
-                        self.resolve_block(else_block);
+                    if let Some(block) = self.arena.get_block(*then_block) {
+                        self.resolve_block(block);
+                    }
+                    if let Some(else_id) = else_block {
+                        if let Some(block) = self.arena.get_block(*else_id) {
+                            self.resolve_block(block);
+                        }
                     }
                 }
                 ExprKind::Match { scrutinee, arms } => {
@@ -511,41 +515,49 @@ impl<'a> Resolver<'a> {
                         self.scopes.pop_scope();
                     }
                 }
-                ExprKind::Block(block) => {
-                    self.resolve_block(block);
-                }
-                ExprKind::Return(expr) => {
-                    if let Some(e) = expr {
-                        self.resolve_expr(*e);
+                ExprKind::Block(block_id) => {
+                    if let Some(block) = self.arena.get_block(*block_id) {
+                        self.resolve_block(block);
                     }
                 }
-                ExprKind::Break { label: _, value } => {
+                ExprKind::Return { value } => {
                     if let Some(e) = value {
                         self.resolve_expr(*e);
                     }
                 }
-                ExprKind::Continue { label: _ } => {}
+                ExprKind::Break { value } => {
+                    if let Some(e) = value {
+                        self.resolve_expr(*e);
+                    }
+                }
+                ExprKind::Continue => {}
                 ExprKind::Loop { body } => {
                     let _loop_scope = self.scopes.push_scope(ScopeKind::Loop, expr.span);
-                    self.resolve_block(body);
+                    if let Some(block) = self.arena.get_block(*body) {
+                        self.resolve_block(block);
+                    }
                     self.scopes.pop_scope();
                 }
                 ExprKind::While { condition, body } => {
                     let _loop_scope = self.scopes.push_scope(ScopeKind::Loop, expr.span);
                     self.resolve_expr(*condition);
-                    self.resolve_block(body);
+                    if let Some(block) = self.arena.get_block(*body) {
+                        self.resolve_block(block);
+                    }
                     self.scopes.pop_scope();
                 }
-                ExprKind::For { pattern, iterable, body } => {
+                ExprKind::For { pattern, iterator, body } => {
                     let _loop_scope = self.scopes.push_scope(ScopeKind::Loop, expr.span);
 
-                    self.resolve_expr(*iterable);
+                    self.resolve_expr(*iterator);
 
                     if let Some(pat) = self.arena.get_pattern(*pattern) {
                         self.collect_pattern_bindings(pat, *pattern);
                     }
 
-                    self.resolve_block(body);
+                    if let Some(block) = self.arena.get_block(*body) {
+                        self.resolve_block(block);
+                    }
                     self.scopes.pop_scope();
                 }
                 ExprKind::Range { start, end, inclusive: _ } => {
@@ -560,6 +572,27 @@ impl<'a> Resolver<'a> {
                     self.resolve_path(path, expr.span, expr_id, expr.hygiene);
                 }
                 ExprKind::Literal(_) => {}
+                ExprKind::Pipeline { left, right } => {
+                    self.resolve_expr(*left);
+                    self.resolve_expr(*right);
+                }
+                ExprKind::Yield { value } => {
+                    self.resolve_expr(*value);
+                }
+                ExprKind::Try { expr } => {
+                    self.resolve_expr(*expr);
+                }
+                ExprKind::Await { expr } => {
+                    self.resolve_expr(*expr);
+                }
+                ExprKind::Unsafe { block } => {
+                    if let Some(blk) = self.arena.get_block(*block) {
+                        self.resolve_block(blk);
+                    }
+                }
+                ExprKind::Comptime { expr } => {
+                    self.resolve_expr(*expr);
+                }
             }
         }
     }
@@ -578,8 +611,9 @@ impl<'a> Resolver<'a> {
         for &scope_id in &scope_chain {
             if let Some(symbol_id) = self.symbols.lookup(scope_id, name) {
                 if let Some(symbol) = self.symbols.get(symbol_id) {
-                    // Check hygiene
-                    if self.hygiene_resolver.is_visible(name, use_hygiene, symbol.def_span.into()) {
+                    // Check hygiene (use root for global scope symbols)
+                    let def_hygiene = HygieneId::root();
+                    if self.hygiene_resolver.is_visible(name, use_hygiene, def_hygiene) {
                         // Resolve!
                         self.resolution_map.resolve_expr(expr_id, symbol_id);
                         self.symbols.mark_used(symbol_id);
@@ -747,15 +781,14 @@ mod tests {
                 pattern: pat_id,
                 ty: None,
                 init: Some(lit_id),
+                mutable: false,
             },
             span: Span::dummy(),
         };
         let stmt_id = arena.alloc_stmt(let_stmt);
 
         let use_expr = Expr {
-            kind: ExprKind::Ident {
-                name: "x".to_string(),
-            },
+            kind: ExprKind::Ident("x".to_string()),
             span: Span::dummy(),
             hygiene: HygieneId::root(),
         };
