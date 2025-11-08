@@ -1,22 +1,30 @@
-//! aurora_optimizer - Aurora Compiler Agent
+//! aurora_optimizer - Performance Tuning
 //!
-//! This crate is part of the Aurora compiler architecture.
-//! See the project constitution and specification for details.
+//! CPU-profiled optimizations, performance gates, and benchmark enforcement.
+//!
+//! # Example
+//!
+//! ```
+//! use aurora_optimizer::profile::{CpuCharacteristics, OptimizationStrategy};
+//! use aurora_optimizer::perf_gate::PerfMetric;
+//!
+//! // Create CPU-specific optimization strategy
+//! let cpu = CpuCharacteristics::skylake();
+//! let strategy = OptimizationStrategy::for_cpu(cpu);
+//!
+//! // Create performance metric
+//! let metric = PerfMetric::throughput("compute", 1000.0);
+//! ```
 
 #![warn(missing_docs)]
 #![warn(clippy::all)]
 
-/// Placeholder module - implementation follows in subsequent phases
-pub fn placeholder() {
-    println!("aurora_optimizer initialized");
-}
+/// CPU-specific optimization profiles
+pub mod profile;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+/// Performance gates and benchmarks
+pub mod perf_gate;
 
-    #[test]
-    fn test_placeholder() {
-        placeholder();
-    }
-}
+// Re-export main types
+pub use perf_gate::{BenchResult, PerfError, PerfGate, PerfMetric};
+pub use profile::{CpuCharacteristics, CpuProfile, OptimizationStrategy};

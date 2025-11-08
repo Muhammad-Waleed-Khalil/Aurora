@@ -8,3 +8,5 @@ license.workspace = true
 [dependencies]
 aurora_mir = { path = "../aurora_mir" }
 aurora_air = { path = "../aurora_air" }
+serde.workspace = true
+thiserror.workspace = true
