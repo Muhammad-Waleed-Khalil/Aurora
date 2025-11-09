@@ -1,0 +1,60 @@
+// Complex boolean logic - showcasing word operators
+fun check_access(is_admin, is_member, is_premium, age) {
+    // Complex conditions using and/or/not
+    if is_admin or (is_member and is_premium) {
+        ret yes;
+    }
+
+    if not is_member and age >= 18 {
+        ret no;
+    }
+
+    if is_premium and age >= 13 or is_admin {
+        ret yes;
+    }
+
+    ret no;
+}
+
+fun categorize_user(age, is_student, has_discount) {
+    if age < 13 and not is_student {
+        println("Child user");
+    } elif age >= 13 and age < 18 {
+        if is_student or has_discount {
+            println("Teen user with benefits");
+        } else {
+            println("Regular teen user");
+        }
+    } elif age >= 18 and age < 65 {
+        if is_student and has_discount {
+            println("Adult student with discount");
+        } elif is_student {
+            println("Adult student");
+        } elif has_discount {
+            println("Adult with discount");
+        } else {
+            println("Regular adult");
+        }
+    } else {
+        println("Senior user");
+    }
+}
+
+fun main() {
+    // Test access control
+    let admin = yes;
+    let member = no;
+    let premium = yes;
+    let age = 25;
+
+    if check_access(admin, member, premium, age) {
+        println("Access granted!");
+    } else {
+        println("Access denied!");
+    }
+
+    // Test categorization
+    categorize_user(age, yes, no);
+    categorize_user(16, yes, yes);
+    categorize_user(70, no, no);
+}

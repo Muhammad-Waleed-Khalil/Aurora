@@ -1,0 +1,36 @@
+// Prime number checker - using word-based operators
+fun is_prime(n) {
+    if n <= 1 {
+        ret no;
+    }
+
+    if n == 2 {
+        ret yes;
+    }
+
+    if n % 2 == 0 {
+        ret no;
+    }
+
+    let var i = 3;
+    while i * i <= n {
+        if n % i == 0 {
+            ret no;
+        }
+        i = i + 2;
+    }
+
+    ret yes;
+}
+
+fun main() {
+    println("Prime numbers up to 50:");
+
+    let var num = 2;
+    while num <= 50 {
+        if is_prime(num) {
+            println(num);
+        }
+        num = num + 1;
+    }
+}

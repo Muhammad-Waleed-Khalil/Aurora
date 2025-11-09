@@ -1,0 +1,33 @@
+// String operations and multiple returns
+fun get_greeting(name, time_of_day) {
+    let greeting = "";
+
+    if time_of_day < 12 {
+        greeting = "Good morning";
+    } elif time_of_day < 18 {
+        greeting = "Good afternoon";
+    } else {
+        greeting = "Good evening";
+    }
+
+    ret greeting;
+}
+
+fun main() {
+    let name = "Alice";
+
+    // Morning
+    let morning_msg = get_greeting(name, 9);
+    println(morning_msg);
+    println(name);
+
+    // Afternoon
+    let afternoon_msg = get_greeting(name, 14);
+    println(afternoon_msg);
+    println(name);
+
+    // Evening
+    let evening_msg = get_greeting(name, 20);
+    println(evening_msg);
+    println(name);
+}

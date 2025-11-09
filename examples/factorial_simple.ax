@@ -1,0 +1,19 @@
+// Factorial using recursion - simplified syntax
+fun factorial(n) {
+    if n <= 1 {
+        ret 1;
+    }
+    ret n * factorial(n - 1);
+}
+
+fun main() {
+    let n = 5;
+    let result = factorial(n);
+    println("Factorial of 5 is:");
+    println(result);
+
+    // Test with different values
+    let f10 = factorial(10);
+    println("Factorial of 10 is:");
+    println(f10);
+}
