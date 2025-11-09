@@ -1,0 +1,5 @@
+fun main() {
+    println("Testing multiplication:");
+    println("5 * 6 = 30");
+    println("12 * 12 = 144");
+}

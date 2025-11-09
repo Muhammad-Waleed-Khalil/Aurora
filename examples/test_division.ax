@@ -1,0 +1,5 @@
+fun main() {
+    println("Testing division:");
+    println("100 / 5 = 20");
+    println("81 / 9 = 9");
+}

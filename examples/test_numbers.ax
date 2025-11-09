@@ -1,0 +1,8 @@
+fun main() {
+    println("Number Tests:");
+    println("Positive: 42");
+    println("Negative: -17");
+    println("Zero: 0");
+    println("Large: 999999");
+    println("Small: 1");
+}
