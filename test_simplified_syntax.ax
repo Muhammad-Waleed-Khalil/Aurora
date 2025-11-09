@@ -1,0 +1,15 @@
+fun greet(name)
+    print "Hello", name
+
+fun main()
+    x = 10
+    y = 5
+    if x > y and y > 0
+        print "x is bigger"
+    elif x == y or no
+        print "Equal or false"
+    else
+        print "y is bigger"
+
+    active = yes
+    ret 0

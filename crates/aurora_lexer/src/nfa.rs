@@ -123,6 +123,7 @@ impl KeywordTable {
         // Control flow keywords
         keywords.insert("if", TokenKind::If);
         keywords.insert("else", TokenKind::Else);
+        keywords.insert("elif", TokenKind::Elif);
         keywords.insert("match", TokenKind::Match);
         keywords.insert("for", TokenKind::For);
         keywords.insert("while", TokenKind::While);
@@ -130,12 +131,15 @@ impl KeywordTable {
         keywords.insert("break", TokenKind::Break);
         keywords.insert("continue", TokenKind::Continue);
         keywords.insert("return", TokenKind::Return);
+        keywords.insert("ret", TokenKind::Ret);
         keywords.insert("yield", TokenKind::Yield);
 
         // Declaration keywords
         keywords.insert("fn", TokenKind::Fn);
+        keywords.insert("fun", TokenKind::Fun);
         keywords.insert("let", TokenKind::Let);
         keywords.insert("mut", TokenKind::Mut);
+        keywords.insert("var", TokenKind::Var);
         keywords.insert("const", TokenKind::Const);
         keywords.insert("static", TokenKind::Static);
         keywords.insert("type", TokenKind::Type);
@@ -143,6 +147,9 @@ impl KeywordTable {
         keywords.insert("impl", TokenKind::Impl);
         keywords.insert("where", TokenKind::Where);
         keywords.insert("in", TokenKind::In);
+
+        // Special statement keywords
+        keywords.insert("print", TokenKind::Print);
 
         // Module keywords
         keywords.insert("use", TokenKind::Use);
@@ -168,6 +175,13 @@ impl KeywordTable {
         // Boolean literals
         keywords.insert("true", TokenKind::True);
         keywords.insert("false", TokenKind::False);
+        keywords.insert("yes", TokenKind::Yes);
+        keywords.insert("no", TokenKind::No);
+
+        // Word-based logical operators (simplified syntax)
+        keywords.insert("and", TokenKind::AndKeyword);
+        keywords.insert("or", TokenKind::OrKeyword);
+        keywords.insert("not", TokenKind::NotKeyword);
 
         // Primitive types
         keywords.insert("i8", TokenKind::I8);

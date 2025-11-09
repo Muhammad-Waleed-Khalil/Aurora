@@ -87,11 +87,11 @@ impl Parser {
                 self.advance();
                 ExprKind::Literal(Literal::Char(c))
             }
-            TokenKind::True => {
+            TokenKind::True | TokenKind::Yes => {
                 self.advance();
                 ExprKind::Literal(Literal::Bool(true))
             }
-            TokenKind::False => {
+            TokenKind::False | TokenKind::No => {
                 self.advance();
                 ExprKind::Literal(Literal::Bool(false))
             }
@@ -131,7 +131,7 @@ impl Parser {
                 let operand = self.parse_expr_with_precedence(Precedence::Unary)?;
                 ExprKind::Unary { op: UnaryOp::Neg, operand }
             }
-            TokenKind::Not => {
+            TokenKind::Not | TokenKind::NotKeyword => {
                 self.advance();
                 let operand = self.parse_expr_with_precedence(Precedence::Unary)?;
                 ExprKind::Unary { op: UnaryOp::Not, operand }
@@ -148,7 +148,7 @@ impl Parser {
             }
             TokenKind::And => {
                 self.advance();
-                let op = if self.check(&TokenKind::Mut) {
+                let op = if self.check(&TokenKind::Mut) || self.check(&TokenKind::Var) {
                     self.advance();
                     UnaryOp::RefMut
                 } else {
@@ -260,8 +260,8 @@ impl Parser {
                 ExprKind::For { pattern, iterator, body }
             }
             
-            // Return
-            TokenKind::Return => {
+            // Return (also 'ret' for simplified syntax)
+            TokenKind::Return | TokenKind::Ret => {
                 self.advance();
                 let value = if self.check(&TokenKind::Semicolon) || self.check(&TokenKind::RBrace) {
                     None
@@ -429,8 +429,8 @@ impl Parser {
             
             TokenKind::Question => Precedence::Propagation,
             TokenKind::DotDot => Precedence::Range,
-            TokenKind::OrOr => Precedence::LogicalOr,
-            TokenKind::AndAnd => Precedence::LogicalAnd,
+            TokenKind::OrOr | TokenKind::OrKeyword => Precedence::LogicalOr,
+            TokenKind::AndAnd | TokenKind::AndKeyword => Precedence::LogicalAnd,
             
             TokenKind::EqEq | TokenKind::NotEq
             | TokenKind::Lt | TokenKind::LtEq | TokenKind::Gt | TokenKind::GtEq => Precedence::Comparison,
@@ -464,8 +464,8 @@ impl Parser {
             TokenKind::LtEq => Ok(BinaryOp::Le),
             TokenKind::Gt => Ok(BinaryOp::Gt),
             TokenKind::GtEq => Ok(BinaryOp::Ge),
-            TokenKind::AndAnd => Ok(BinaryOp::And),
-            TokenKind::OrOr => Ok(BinaryOp::Or),
+            TokenKind::AndAnd | TokenKind::AndKeyword => Ok(BinaryOp::And),
+            TokenKind::OrOr | TokenKind::OrKeyword => Ok(BinaryOp::Or),
             TokenKind::And => Ok(BinaryOp::BitAnd),
             TokenKind::Or => Ok(BinaryOp::BitOr),
             TokenKind::Caret => Ok(BinaryOp::BitXor),
@@ -498,9 +498,20 @@ impl Parser {
         let then_block_node = self.parse_block()?;
         let then_block = self.arena.alloc(aurora_ast::nodes::AstNode::Block(then_block_node));
         
-        let else_block = if self.check(&TokenKind::Else) {
+        let else_block = if self.check(&TokenKind::Elif) {
+            // elif (simplified syntax)
             self.advance();
-            
+            let else_if_expr_id = self.parse_if_expr(self.token_to_span(self.current()))?;
+            // Wrap in a block
+            let else_if_block = aurora_ast::Block {
+                stmts: vec![],
+                expr: Some(else_if_expr_id),
+                span: self.token_to_span(self.previous()),
+            };
+            Some(self.arena.alloc(aurora_ast::nodes::AstNode::Block(else_if_block)))
+        } else if self.check(&TokenKind::Else) {
+            self.advance();
+
             if self.check(&TokenKind::If) {
                 // else if
                 let else_if_expr_id = self.parse_if_expr(self.token_to_span(self.current()))?;

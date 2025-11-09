@@ -24,7 +24,7 @@ impl Parser {
 
         // Parse based on keyword
         let kind = match self.peek() {
-            TokenKind::Fn => self.parse_function(is_pub)?,
+            TokenKind::Fn | TokenKind::Fun => self.parse_function(is_pub)?,
             TokenKind::Type => self.parse_type_decl(is_pub)?,
             TokenKind::Trait => self.parse_trait(is_pub)?,
             TokenKind::Impl => self.parse_impl()?,
@@ -35,7 +35,7 @@ impl Parser {
             // They'll be added when we implement full struct/enum syntax
             _ => {
                 return Err(ParseError::Expected {
-                    expected: "item declaration (fn, type, trait, impl, const, mod, use)".to_string(),
+                    expected: "item declaration (fn/fun, type, trait, impl, const, mod, use)".to_string(),
                     found: format!("{:?}", self.peek()),
                     span: self.token_to_span(self.current()),
                     message: "Expected a top-level item".to_string(),
@@ -60,8 +60,16 @@ impl Parser {
             false
         };
 
-        // 'fn' keyword
-        self.expect(TokenKind::Fn, "Expected 'fn'")?;
+        // 'fn' or 'fun' keyword
+        if !self.check(&TokenKind::Fn) && !self.check(&TokenKind::Fun) {
+            return Err(ParseError::Expected {
+                expected: "'fn' or 'fun'".to_string(),
+                found: format!("{:?}", self.peek()),
+                span: self.token_to_span(self.current()),
+                message: "Expected function keyword".to_string(),
+            });
+        }
+        self.advance();
 
         // Function name
         let name_token = self.expect(TokenKind::Ident, "Expected function name")?;
@@ -124,8 +132,8 @@ impl Parser {
         loop {
             let start = self.token_to_span(self.current());
 
-            // Check for 'mut'
-            let is_mut = if self.check(&TokenKind::Mut) {
+            // Check for 'mut' or 'var' (simplified syntax)
+            let is_mut = if self.check(&TokenKind::Mut) || self.check(&TokenKind::Var) {
                 self.advance();
                 true
             } else {
