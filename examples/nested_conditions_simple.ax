@@ -1,0 +1,50 @@
+// Deeply nested conditions - stress test for elif
+fun classify_number(n) {
+    if n < 0 {
+        if n < -100 {
+            println("Very large negative");
+        } elif n < -10 {
+            println("Large negative");
+        } else {
+            println("Small negative");
+        }
+    } elif n == 0 {
+        println("Zero");
+    } elif n > 0 and n <= 10 {
+        if n == 1 {
+            println("One");
+        } elif n == 2 {
+            println("Two");
+        } elif n == 3 {
+            println("Three");
+        } else {
+            println("Small positive");
+        }
+    } elif n > 10 and n <= 100 {
+        if n % 10 == 0 {
+            println("Round number");
+        } else {
+            println("Medium positive");
+        }
+    } else {
+        if n > 1000 {
+            println("Very large positive");
+        } elif n > 100 {
+            println("Large positive");
+        }
+    }
+}
+
+fun main() {
+    classify_number(-150);
+    classify_number(-50);
+    classify_number(-5);
+    classify_number(0);
+    classify_number(1);
+    classify_number(2);
+    classify_number(7);
+    classify_number(20);
+    classify_number(50);
+    classify_number(150);
+    classify_number(1500);
+}
