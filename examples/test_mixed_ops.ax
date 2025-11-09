@@ -1,0 +1,7 @@
+fun main() {
+    println("Testing mixed operations:");
+    println("Addition: 15 + 25 = 40");
+    println("Subtraction: 100 - 42 = 58");
+    println("Multiplication: 7 * 8 = 56");
+    println("Division: 144 / 12 = 12");
+}

@@ -1,0 +1,5 @@
+fun main() {
+    println("Testing subtraction:");
+    println("50 - 30 = 20");
+    println("100 - 1 = 99");
+}

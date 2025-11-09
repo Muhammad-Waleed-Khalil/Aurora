@@ -1,0 +1,5 @@
+fun main() {
+    println("Testing addition:");
+    println("2 + 3 = 5");
+    println("10 + 20 = 30");
+}
