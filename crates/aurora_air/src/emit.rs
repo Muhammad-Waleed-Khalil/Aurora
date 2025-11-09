@@ -211,17 +211,47 @@ impl AirEmitter {
                 else_block,
                 ..
             } => {
-                let cond_op = self.operand_to_air(cond);
-                air_func.push(Instruction::Test {
-                    left: cond_op.clone(),
-                    right: cond_op,
-                });
-                air_func.push(Instruction::Jne {
-                    target: format!(".L{}", then_block),
-                });
-                air_func.push(Instruction::Jmp {
-                    target: format!(".L{}", else_block),
-                });
+                // Handle constant conditions
+                match cond {
+                    MirOp::Const(Constant::Bool(true)) => {
+                        // Always branch to then
+                        air_func.push(Instruction::Jmp {
+                            target: format!(".L{}", then_block),
+                        });
+                    }
+                    MirOp::Const(Constant::Bool(false)) => {
+                        // Always branch to else
+                        air_func.push(Instruction::Jmp {
+                            target: format!(".L{}", else_block),
+                        });
+                    }
+                    _ => {
+                        // Runtime condition - need to test it
+                        let cond_op = self.operand_to_air(cond);
+                        // Move to a register if it's an immediate
+                        let cond_reg = match &cond_op {
+                            Operand::Imm(_) => {
+                                let reg = Register::RAX;
+                                air_func.push(Instruction::Mov {
+                                    dest: Operand::Reg(reg),
+                                    src: cond_op,
+                                });
+                                Operand::Reg(reg)
+                            }
+                            _ => cond_op,
+                        };
+                        air_func.push(Instruction::Test {
+                            left: cond_reg.clone(),
+                            right: cond_reg,
+                        });
+                        air_func.push(Instruction::Jne {
+                            target: format!(".L{}", then_block),
+                        });
+                        air_func.push(Instruction::Jmp {
+                            target: format!(".L{}", else_block),
+                        });
+                    }
+                }
             }
 
             MirInst::Jump { target, .. } => {
