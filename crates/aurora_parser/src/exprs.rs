@@ -37,27 +37,57 @@ enum Precedence {
 impl Parser {
     /// Parse an expression with given minimum precedence
     pub(crate) fn parse_expr(&mut self) -> ParseResult<u32> {
-        self.parse_expr_with_precedence(Precedence::None)
+        eprintln!("[DEBUG] parse_expr() - Token: {:?}", self.peek());
+        let result = self.parse_expr_with_precedence(Precedence::None);
+        eprintln!("[DEBUG] parse_expr() - Returning: {:?}", result.is_ok());
+        result
     }
-    
+
     /// Parse expression with precedence climbing
     fn parse_expr_with_precedence(&mut self, min_prec: Precedence) -> ParseResult<u32> {
+        eprintln!("[DEBUG] parse_expr_with_precedence() - Token: {:?}, min_prec: {:?}", self.peek(), min_prec);
         let start = self.token_to_span(self.current());
-        
+
         // Parse prefix/primary expression
+        eprintln!("[DEBUG] About to call parse_prefix_expr()");
         let mut left = self.parse_prefix_expr()?;
-        
+        eprintln!("[DEBUG] parse_prefix_expr() returned successfully");
+
         // Parse infix/postfix operators
+        let mut iterations = 0;
+        const MAX_ITERATIONS: usize = 10000;
         while !self.is_at_end() {
+            iterations += 1;
+            if iterations > MAX_ITERATIONS {
+                eprintln!("[PARSER ERROR] Infinite loop in parse_expr_with_precedence! Token: {:?}", self.peek());
+                return Err(ParseError::InvalidSyntax {
+                    span: self.token_to_span(self.current()),
+                    message: "Infinite loop in expression parsing".to_string(),
+                });
+            }
+
             let prec = self.get_infix_precedence();
-            
+            eprintln!("[DEBUG] parse_expr iteration {}, token: {:?}, prec: {:?}", iterations, self.peek(), prec);
+
             if prec < min_prec {
+                eprintln!("[DEBUG] Breaking: prec < min_prec");
                 break;
             }
-            
+
+            let token_before = std::mem::discriminant(self.peek());
             left = self.parse_infix_expr(left, prec, start)?;
+
+            // Safety check: ensure we advanced
+            if std::mem::discriminant(self.peek()) == token_before {
+                eprintln!("[PARSER ERROR] parse_infix_expr did not advance! Token: {:?}", self.peek());
+                return Err(ParseError::InvalidSyntax {
+                    span: self.token_to_span(self.current()),
+                    message: "Parser did not advance in expression".to_string(),
+                });
+            }
         }
-        
+
+        eprintln!("[DEBUG] parse_expr_with_precedence() - Returning successfully");
         Ok(left)
     }
     

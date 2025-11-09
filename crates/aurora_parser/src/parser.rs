@@ -78,8 +78,14 @@ impl Parser {
     /// This method consumes the parser and returns an Ast, reporting
     /// errors via the diagnostic collector if provided.
     pub fn parse(mut self) -> Ast {
+        eprintln!("[DEBUG] Parser::parse() starting...");
+        eprintln!("[DEBUG] Total tokens: {}", self.tokens.len());
+
         match self.parse_items() {
-            Ok(items) => Program::new(items, self.span_from_tokens()),
+            Ok(items) => {
+                eprintln!("[DEBUG] parse_items() returned {} items", items.len());
+                Program::new(items, self.span_from_tokens())
+            }
             Err(e) => {
                 eprintln!("Parse error: {:?}", e);
                 Program::empty()
@@ -90,16 +96,37 @@ impl Parser {
     /// Parse top-level items until EOF
     fn parse_items(&mut self) -> ParseResult<Vec<u32>> {
         let mut items = Vec::new();
+        let mut iterations = 0;
+        const MAX_ITERATIONS: usize = 10000;
 
         while !self.is_at_end() {
+            iterations += 1;
+            if iterations > MAX_ITERATIONS {
+                eprintln!("[PARSER ERROR] Infinite loop detected in parse_items()");
+                eprintln!("  Current token: {:?}", self.peek());
+                eprintln!("  Position: {}", self.pos);
+                return Err(ParseError::InvalidSyntax {
+                    span: self.token_to_span(self.current()),
+                    message: "Parser infinite loop detected - please report this bug".to_string(),
+                });
+            }
+
             // Skip any stray semicolons
             if self.check(&TokenKind::Semicolon) {
                 self.advance();
                 continue;
             }
 
+            let pos_before = self.pos;
             match self.parse_item() {
-                Ok(item_id) => items.push(item_id),
+                Ok(item_id) => {
+                    items.push(item_id);
+                    // Safety check: ensure we advanced
+                    if self.pos == pos_before {
+                        eprintln!("[PARSER WARNING] parse_item() did not advance! Token: {:?}", self.peek());
+                        self.advance(); // Force advancement to prevent infinite loop
+                    }
+                }
                 Err(err) => {
                     self.errors.push(err);
                     self.synchronize();
