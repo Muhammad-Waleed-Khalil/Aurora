@@ -90,3 +90,20 @@ tmp/
 *.air
 *.mir
 *_dump.txt
+
+# Compiled Aurora binaries (from examples)
+hello_world
+hello_simple
+fizzbuzz_simple
+operators_simple
+factorial_simple
+fibonacci_simple
+prime_simple
+prime_checker_simple
+complex_logic_simple
+nested_conditions_simple
+string_operations_simple
+test_bin
+
+# Runtime object files
+runtime/*.o
