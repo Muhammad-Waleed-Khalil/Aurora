@@ -154,6 +154,14 @@ impl LlvmBackend {
                 continue;
             }
 
+            // Special handling for LEA with labels (RIP-relative for PIC)
+            if trimmed.starts_with("lea ") {
+                let converted = self.convert_lea_instruction(trimmed);
+                output.push_str(&converted);
+                output.push('\n');
+                continue;
+            }
+
             // Regular instruction - keep as-is for Intel syntax
             output.push_str(line);
             output.push('\n');
@@ -184,6 +192,27 @@ impl LlvmBackend {
             .replace(" dw ", " .word ")
             .replace(" dd ", " .long ")
             .replace(" dq ", " .quad ")
+    }
+
+    /// Convert LEA instruction to use RIP-relative addressing for labels
+    fn convert_lea_instruction(&self, line: &str) -> String {
+        // Check if this is a LEA with a simple label (not a memory address)
+        // Format: "    lea reg, label" -> "    lea reg, [rip + label]"
+        let trimmed = line.trim();
+
+        // Simple heuristic: if the second operand doesn't contain '[', it's likely a label
+        if let Some((prefix, operands)) = trimmed.split_once("lea ") {
+            if let Some((dest, src)) = operands.split_once(", ") {
+                let src_trimmed = src.trim();
+                // If src doesn't start with '[', it's a label - make it RIP-relative
+                if !src_trimmed.starts_with('[') && !src_trimmed.chars().next().unwrap_or('0').is_numeric() {
+                    return format!("    lea {}, [rip + {}]", dest.trim(), src_trimmed);
+                }
+            }
+        }
+
+        // Otherwise, keep as-is
+        line.to_string()
     }
 
     /// Get target triple

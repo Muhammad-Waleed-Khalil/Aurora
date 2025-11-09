@@ -42,12 +42,14 @@ impl AirEmitter {
             air_module.add_function(air_func);
         }
 
-        // Add string constants to data section
+        // Add string constants to data section with null terminators
         for (label, content) in &self.string_constants {
+            let mut bytes = content.as_bytes().to_vec();
+            bytes.push(0); // Add null terminator for C strings
             air_module.data.push(DataDirective {
                 label: label.clone(),
                 kind: DataKind::String,
-                value: content.as_bytes().to_vec(),
+                value: bytes,
             });
         }
 
@@ -464,15 +466,34 @@ impl AirEmitter {
         // Place first 6 arguments in registers
         for (i, arg) in args.iter().take(6).enumerate() {
             let arg_op = self.operand_to_air(arg);
-            air_func.push(Instruction::Mov {
-                dest: Operand::Reg(ARG_REGISTERS[i]),
-                src: arg_op,
-            });
+
+            // Use LEA for label addresses (Position Independent Code)
+            match &arg_op {
+                Operand::Label(label) => {
+                    air_func.push(Instruction::Lea {
+                        dest: Operand::Reg(ARG_REGISTERS[i]),
+                        src: Operand::Label(label.clone()),
+                    });
+                }
+                _ => {
+                    air_func.push(Instruction::Mov {
+                        dest: Operand::Reg(ARG_REGISTERS[i]),
+                        src: arg_op,
+                    });
+                }
+            }
         }
 
-        // Call function
-        let func_op = self.operand_to_air(func);
-        air_func.push(Instruction::Call { target: func_op });
+        // Call function - handle function name as label/symbol
+        let func_target = match func {
+            MirOp::Const(Constant::String(name)) => {
+                // Function name is a symbol/label
+                Operand::Label(name.clone())
+            }
+            _ => self.operand_to_air(func),
+        };
+
+        air_func.push(Instruction::Call { target: func_target });
 
         // Clean up stack if we pushed arguments
         if args.len() > 6 {
