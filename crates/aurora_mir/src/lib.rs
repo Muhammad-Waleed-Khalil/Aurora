@@ -11,6 +11,7 @@
 pub mod cfg;
 pub mod dump;
 pub mod lower;
+pub mod lower_impl;
 pub mod mir;
 pub mod opt;
 

@@ -2,6 +2,7 @@
 //!
 //! This module provides the root AST structure and unified node types.
 
+use crate::arena::Arena;
 use crate::decl::{Item, ItemId};
 use crate::expr::Expr;
 use crate::pattern::Pattern;
@@ -17,12 +18,14 @@ pub struct Program {
     pub items: Vec<ItemId>,
     /// Source span covering the entire program
     pub span: Span,
+    /// Arena containing all AST nodes
+    pub arena: Arena,
 }
 
 impl Program {
-    /// Create a new program
-    pub fn new(items: Vec<ItemId>, span: Span) -> Self {
-        Self { items, span }
+    /// Create a new program with arena
+    pub fn new(items: Vec<ItemId>, span: Span, arena: Arena) -> Self {
+        Self { items, span, arena }
     }
 
     /// Create an empty program
@@ -30,6 +33,7 @@ impl Program {
         Self {
             items: Vec::new(),
             span: Span::dummy(),
+            arena: Arena::new(),
         }
     }
 

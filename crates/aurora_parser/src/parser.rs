@@ -59,18 +59,20 @@ impl Parser {
         }
     }
 
-    /// Parse a complete program (original API)
+    /// Parse a complete program (original API - deprecated, arena now in Program)
     pub fn parse_program(mut self) -> ParseResult<(Program, Arena)> {
         let items = self.parse_items()?;
 
-        let program = Program::new(items, self.span_from_tokens());
+        // Clone arena for backwards compatibility
+        let arena_clone = self.arena.clone();
+        let program = Program::new(items, self.span_from_tokens(), self.arena);
 
         // Return errors if any were collected
         if !self.errors.is_empty() {
             return Err(ParseError::Multiple(self.errors));
         }
 
-        Ok((program, self.arena))
+        Ok((program, arena_clone))
     }
 
     /// Parse a complete program into AST (for pipeline integration)
@@ -84,7 +86,7 @@ impl Parser {
         match self.parse_items() {
             Ok(items) => {
                 eprintln!("[DEBUG] parse_items() returned {} items", items.len());
-                Program::new(items, self.span_from_tokens())
+                Program::new(items, self.span_from_tokens(), self.arena)
             }
             Err(e) => {
                 eprintln!("Parse error: {:?}", e);
