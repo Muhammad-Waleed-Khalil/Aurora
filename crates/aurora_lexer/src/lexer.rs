@@ -308,7 +308,8 @@ impl Lexer {
 
         self.advance(); // closing '"'
 
-        let lexeme: String = self.source[start_pos..self.pos].iter().collect();
+        // Extract string content without quotes
+        let lexeme: String = self.source[start_pos+1..self.pos-1].iter().collect();
         Ok(Token::new(TokenKind::StringLiteral, lexeme, self.file.clone(), start_line, start_column))
     }
 
@@ -328,7 +329,8 @@ impl Lexer {
 
         self.advance(); // closing '"'
 
-        let lexeme: String = self.source[start_pos..self.pos].iter().collect();
+        // Extract raw string content without r"..."
+        let lexeme: String = self.source[start_pos+2..self.pos-1].iter().collect();
         Ok(Token::new(TokenKind::RawStringLiteral, lexeme, self.file.clone(), start_line, start_column))
     }
 

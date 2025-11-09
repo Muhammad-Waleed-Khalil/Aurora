@@ -69,22 +69,13 @@ impl Parser {
             let prec = self.get_infix_precedence();
             eprintln!("[DEBUG] parse_expr iteration {}, token: {:?}, prec: {:?}", iterations, self.peek(), prec);
 
-            if prec < min_prec {
-                eprintln!("[DEBUG] Breaking: prec < min_prec");
+            // Break if not an operator (prec == None) or precedence too low
+            if prec == Precedence::None || prec < min_prec {
+                eprintln!("[DEBUG] Breaking: not an operator or prec < min_prec");
                 break;
             }
 
-            let token_before = std::mem::discriminant(self.peek());
             left = self.parse_infix_expr(left, prec, start)?;
-
-            // Safety check: ensure we advanced
-            if std::mem::discriminant(self.peek()) == token_before {
-                eprintln!("[PARSER ERROR] parse_infix_expr did not advance! Token: {:?}", self.peek());
-                return Err(ParseError::InvalidSyntax {
-                    span: self.token_to_span(self.current()),
-                    message: "Parser did not advance in expression".to_string(),
-                });
-            }
         }
 
         eprintln!("[DEBUG] parse_expr_with_precedence() - Returning successfully");

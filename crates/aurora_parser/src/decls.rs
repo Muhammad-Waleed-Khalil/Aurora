@@ -574,13 +574,16 @@ impl Parser {
 
             // Safety: remember token discriminant to ensure we advance
             let token_before = std::mem::discriminant(self.peek());
+            let mut parsed_something = false;
 
             // Try to parse a statement
             if let Ok(stmt_id) = self.parse_stmt() {
                 stmts.push(stmt_id);
+                parsed_something = true;
             } else {
                 // If statement fails, try expression without semicolon (trailing)
                 if let Ok(expr_id) = self.parse_expr() {
+                    parsed_something = true;
                     // If there's no semicolon, this is a trailing expression
                     if !self.check(&TokenKind::Semicolon) {
                         trailing_expr = Some(expr_id);
@@ -603,9 +606,10 @@ impl Parser {
                 }
             }
 
-            // CRITICAL FIX: Ensure we advanced
-            if std::mem::discriminant(self.peek()) == token_before {
-                eprintln!("[PARSER ERROR] Parser did not advance in parse_block! Token still: {:?}", self.peek());
+            // CRITICAL FIX: Only force advancement if we failed to parse AND didn't advance
+            // This prevents skipping valid statements while still preventing infinite loops
+            if !parsed_something && std::mem::discriminant(self.peek()) == token_before {
+                eprintln!("[PARSER ERROR] Parser stuck after synchronize! Token: {:?}", self.peek());
                 eprintln!("[PARSER ERROR] Forcing advancement to prevent infinite loop...");
                 self.advance(); // Force advancement to prevent infinite loop
             }

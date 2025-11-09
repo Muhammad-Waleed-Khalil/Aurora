@@ -30,6 +30,20 @@ void aurora_print(const char* str) {
 }
 
 /**
+ * Alias for aurora_println (for compatibility)
+ */
+void println(const char* str) {
+    aurora_println(str);
+}
+
+/**
+ * Alias for aurora_print (for compatibility)
+ */
+void print(const char* str) {
+    aurora_print(str);
+}
+
+/**
  * Allocate memory
  * Simple wrapper around malloc for Aurora
  */
