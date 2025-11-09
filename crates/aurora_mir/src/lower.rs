@@ -264,15 +264,15 @@ impl MirBuilder {
 /// AST to MIR lowering context
 pub struct LoweringContext<D> {
     /// MIR builder
-    builder: MirBuilder,
+    pub(crate) builder: MirBuilder,
     /// Type map from type checker
-    type_map: TypeMap,
+    pub(crate) type_map: TypeMap,
     /// Function ID counter
-    next_func_id: FunctionId,
+    pub(crate) next_func_id: FunctionId,
     /// Diagnostic collector
-    diagnostics: Arc<D>,
+    pub(crate) diagnostics: Arc<D>,
     /// Current AST reference
-    ast: Option<Ast>,
+    pub(crate) ast: Option<Ast>,
 }
 
 impl<D: Send + Sync + 'static> LoweringContext<D> {
@@ -290,65 +290,9 @@ impl<D: Send + Sync + 'static> LoweringContext<D> {
     /// Lower entire AST to MIR module
     pub fn lower(&mut self, ast: Ast) -> crate::MirModule {
         self.ast = Some(ast.clone());
-        let mut module = crate::MirModule::new();
 
-        // MINIMAL IMPLEMENTATION: Hardcoded for hello_world
-        // Create a main function that calls println
-        // In a real implementation, we would:
-        // 1. Parse the arena from the AST
-        // 2. Iterate through items and lower each one
-        // 3. Handle all expression and statement types
-        //
-        // For now, we create a minimal main function with println calls
-
-        if !ast.items.is_empty() {
-            // Create main function
-            let func_id = self.next_func_id;
-            self.next_func_id += 1;
-
-            self.builder.start_function(
-                func_id,
-                "main".to_string(),
-                Type::Unit,
-                EffectSet::IO,
-            );
-
-            // Create println calls
-            // For hello_world.ax which has two println calls:
-            // println("Hello, World!");
-            // println("Welcome to Aurora!");
-
-            let span = Span::dummy();
-
-            // First println call
-            let str1_const = Operand::Const(Constant::String("Hello, World!".to_string()));
-            self.builder.build_call(
-                Operand::Const(Constant::String("aurora_println".to_string())),
-                vec![str1_const],
-                None, // println returns Unit
-                EffectSet::IO,
-                span,
-            );
-
-            // Second println call
-            let str2_const = Operand::Const(Constant::String("Welcome to Aurora!".to_string()));
-            self.builder.build_call(
-                Operand::Const(Constant::String("aurora_println".to_string())),
-                vec![str2_const],
-                None,
-                EffectSet::IO,
-                span,
-            );
-
-            // Return from main
-            self.builder.build_return(None, span);
-
-            if let Some(func) = self.builder.finish_function() {
-                module.add_function(func);
-            }
-        }
-
-        module
+        // Use the real implementation from lower_impl.rs
+        self.lower_ast_real(ast)
     }
 
     /// Lower a function declaration
