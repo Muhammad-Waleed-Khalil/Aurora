@@ -1,0 +1,33 @@
+name: Sync Claude branch to main with Muhammad Waleed Khalil as author
+
+on:
+  push:
+    branches:
+      - claude/checkout-specify-tasks-011CUt2hL6b65ccB5u1J3JEF
+
+jobs:
+  sync-to-main:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Claude branch
+        uses: actions/checkout@v4
+        with:
+          ref: claude/checkout-specify-tasks-011CUt2hL6b65ccB5u1J3JEF
+          fetch-depth: 0
+
+      - name: Configure Git user
+        run: |
+          git config --global user.name "Muhammad Waleed Khalil"
+          git config --global user.email "mwaleedkhalil@gmail.com"
+
+      - name: Force overwrite main with Claude branch
+        run: |
+          git checkout -B main
+          git push origin main --force
+
+      - name: Recommit with Muhammad Waleed Khalil as author (single clean commit)
+        run: |
+          git checkout main
+          git reset $(git commit-tree HEAD^{tree} -m "Auto-sync from Claude branch by Muhammad Waleed Khalil")
+          git push origin main --force
