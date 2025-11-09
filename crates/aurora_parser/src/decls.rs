@@ -12,6 +12,7 @@ use crate::parser::Parser;
 impl Parser {
     /// Parse a top-level item
     pub(crate) fn parse_item(&mut self) -> ParseResult<u32> {
+        eprintln!("[DEBUG] parse_item() - Token: {:?}", self.peek());
         let start = self.token_to_span(self.current());
 
         // Check for visibility modifier
@@ -22,9 +23,14 @@ impl Parser {
             false
         };
 
+        eprintln!("[DEBUG] parse_item() - About to match token: {:?}", self.peek());
+
         // Parse based on keyword
         let kind = match self.peek() {
-            TokenKind::Fn | TokenKind::Fun => self.parse_function(is_pub)?,
+            TokenKind::Fn | TokenKind::Fun => {
+                eprintln!("[DEBUG] Parsing function...");
+                self.parse_function(is_pub)?
+            }
             TokenKind::Type => self.parse_type_decl(is_pub)?,
             TokenKind::Trait => self.parse_trait(is_pub)?,
             TokenKind::Impl => self.parse_impl()?,
@@ -34,6 +40,7 @@ impl Parser {
             // Note: struct and enum are parsed via 'type' for now
             // They'll be added when we implement full struct/enum syntax
             _ => {
+                eprintln!("[DEBUG] Unexpected token in parse_item: {:?}", self.peek());
                 return Err(ParseError::Expected {
                     expected: "item declaration (fn/fun, type, trait, impl, const, mod, use)".to_string(),
                     found: format!("{:?}", self.peek()),
@@ -45,11 +52,13 @@ impl Parser {
 
         let span = self.span_from(start);
         let item = Item { kind, span };
+        eprintln!("[DEBUG] parse_item() - Complete");
         Ok(self.arena.alloc_item(item))
     }
 
     /// Parse function declaration
     fn parse_function(&mut self, is_pub: bool) -> ParseResult<ItemKind> {
+        eprintln!("[DEBUG] parse_function() entered");
         let start = self.token_to_span(self.current());
 
         // Check for async
@@ -70,40 +79,53 @@ impl Parser {
             });
         }
         self.advance();
+        eprintln!("[DEBUG] Advanced past fun keyword");
 
         // Function name
         let name_token = self.expect(TokenKind::Ident, "Expected function name")?;
         let name = name_token.lexeme.clone();
+        eprintln!("[DEBUG] Function name: {}", name);
 
         // Generic parameters (optional)
         let generics = if self.check(&TokenKind::Lt) {
+            eprintln!("[DEBUG] Parsing generics...");
             self.parse_generic_params()?
         } else {
             Vec::new()
         };
 
         // Parameters
+        eprintln!("[DEBUG] Expecting ( ...");
         self.expect(TokenKind::LParen, "Expected '(' after function name")?;
+        eprintln!("[DEBUG] Parsing params...");
         let params = self.parse_param_list()?;
+        eprintln!("[DEBUG] Expecting ) ...");
         self.expect(TokenKind::RParen, "Expected ')' after parameters")?;
+        eprintln!("[DEBUG] Got ), checking for return type...");
 
         // Return type (optional)
         let return_type = if self.check(&TokenKind::RArrow) {
+            eprintln!("[DEBUG] Parsing return type...");
             self.advance();
             Some(self.parse_type()?)
         } else {
+            eprintln!("[DEBUG] No return type");
             None
         };
 
         // Where clause (optional)
         let where_clause = if self.check(&TokenKind::Where) {
+            eprintln!("[DEBUG] Parsing where clause...");
             Some(self.parse_where_clause()?)
         } else {
+            eprintln!("[DEBUG] No where clause");
             None
         };
 
         // Function body
+        eprintln!("[DEBUG] Parsing function body (block)... Token: {:?}", self.peek());
         let body = self.parse_block()?;
+        eprintln!("[DEBUG] Function body parsed successfully");
 
         let span = self.span_from(start);
 
@@ -123,13 +145,26 @@ impl Parser {
 
     /// Parse function parameters
     fn parse_param_list(&mut self) -> ParseResult<Vec<Param>> {
+        eprintln!("[DEBUG] parse_param_list() - Current token: {:?}", self.peek());
         let mut params = Vec::new();
 
         if self.check(&TokenKind::RParen) {
+            eprintln!("[DEBUG] parse_param_list() - Empty params, returning");
             return Ok(params);
         }
 
+        eprintln!("[DEBUG] parse_param_list() - Entering loop");
+        let mut iterations = 0;
         loop {
+            iterations += 1;
+            if iterations > 1000 {
+                eprintln!("[DEBUG] Infinite loop in parse_param_list! Token: {:?}", self.peek());
+                return Err(ParseError::InvalidSyntax {
+                    span: self.token_to_span(self.current()),
+                    message: "Infinite loop in parameter parsing".to_string(),
+                });
+            }
+
             let start = self.token_to_span(self.current());
 
             // Check for 'mut' or 'var' (simplified syntax)
@@ -515,14 +550,31 @@ impl Parser {
 
     /// Parse a block
     pub(crate) fn parse_block(&mut self) -> ParseResult<Block> {
+        eprintln!("[DEBUG] parse_block() - Entering");
         let start = self.token_to_span(self.current());
 
         self.expect(TokenKind::LBrace, "Expected '{'")?;
 
         let mut stmts = Vec::new();
         let mut trailing_expr = None;
+        let mut iterations = 0;
+        const MAX_ITERATIONS: usize = 10000;
 
         while !self.check(&TokenKind::RBrace) && !self.is_at_end() {
+            iterations += 1;
+            if iterations > MAX_ITERATIONS {
+                eprintln!("[PARSER ERROR] Infinite loop in parse_block()! Token: {:?}", self.peek());
+                return Err(ParseError::InvalidSyntax {
+                    span: self.token_to_span(self.current()),
+                    message: "Infinite loop in block parsing".to_string(),
+                });
+            }
+
+            eprintln!("[DEBUG] parse_block() iteration {} - Token: {:?}", iterations, self.peek());
+
+            // Safety: remember token discriminant to ensure we advance
+            let token_before = std::mem::discriminant(self.peek());
+
             // Try to parse a statement
             if let Ok(stmt_id) = self.parse_stmt() {
                 stmts.push(stmt_id);
@@ -546,10 +598,19 @@ impl Parser {
                         stmts.push(self.arena.alloc_stmt(stmt));
                     }
                 } else {
+                    eprintln!("[DEBUG] Both parse_stmt and parse_expr failed, synchronizing...");
                     self.synchronize();
                 }
             }
+
+            // CRITICAL FIX: Ensure we advanced
+            if std::mem::discriminant(self.peek()) == token_before {
+                eprintln!("[PARSER ERROR] Parser did not advance in parse_block! Token still: {:?}", self.peek());
+                eprintln!("[PARSER ERROR] Forcing advancement to prevent infinite loop...");
+                self.advance(); // Force advancement to prevent infinite loop
+            }
         }
+        eprintln!("[DEBUG] parse_block() - Exiting normally");
 
         self.expect(TokenKind::RBrace, "Expected '}'")?;
 
