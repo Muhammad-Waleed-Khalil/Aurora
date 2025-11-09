@@ -134,6 +134,24 @@ impl<D: Send + Sync + 'static> LoweringContext<D> {
                     let value_id = self.builder.build_unaryop(mir_op, val, result_ty, Span::dummy());
                     Operand::Value(value_id)
                 }
+                ExprKind::If { condition, then_block, else_block } => {
+                    self.lower_if(*condition, *then_block, *else_block, ast)
+                }
+                ExprKind::While { condition, body } => {
+                    self.lower_while(*condition, *body, ast);
+                    Operand::Const(Constant::Unit)
+                }
+                ExprKind::Return { value } => {
+                    let ret_val = value.map(|v| self.lower_expr_real(v, ast));
+                    self.builder.build_return(ret_val, Span::dummy());
+                    Operand::Const(Constant::Unit)
+                }
+                ExprKind::Block(block_id) => {
+                    if let Some(AstNode::Block(block)) = ast.arena.get(*block_id) {
+                        self.lower_block(block, ast);
+                    }
+                    Operand::Const(Constant::Unit)
+                }
                 _ => Operand::Const(Constant::Unit)
             }
         } else {
@@ -176,5 +194,81 @@ impl<D: Send + Sync + 'static> LoweringContext<D> {
             AstUnaryOp::BitNot => UnaryOp::BitNot,
             _ => UnaryOp::Not,
         }
+    }
+
+    /// Lower an if expression
+    fn lower_if(
+        &mut self,
+        condition: ExprId,
+        then_block_id: u32,
+        else_block_id: Option<u32>,
+        ast: &Ast,
+    ) -> Operand {
+        eprintln!("[MIR] Lowering if expression");
+
+        // Evaluate condition
+        let cond_op = self.lower_expr_real(condition, ast);
+
+        // Create blocks for then, else, and merge
+        let then_bb = self.builder.new_block();
+        let else_bb = self.builder.new_block();
+        let merge_bb = self.builder.new_block();
+
+        // Branch on condition
+        self.builder.build_branch(cond_op, then_bb, else_bb, Span::dummy());
+
+        // Lower then block
+        self.builder.set_block(then_bb);
+        if let Some(AstNode::Block(then_block)) = ast.arena.get(then_block_id) {
+            self.lower_block(then_block, ast);
+        }
+        if !self.builder.is_terminated() {
+            self.builder.build_jump(merge_bb, Span::dummy());
+        }
+
+        // Lower else block
+        self.builder.set_block(else_bb);
+        if let Some(else_id) = else_block_id {
+            if let Some(AstNode::Block(else_block)) = ast.arena.get(else_id) {
+                self.lower_block(else_block, ast);
+            }
+        }
+        if !self.builder.is_terminated() {
+            self.builder.build_jump(merge_bb, Span::dummy());
+        }
+
+        // Continue in merge block
+        self.builder.set_block(merge_bb);
+        Operand::Const(Constant::Unit)
+    }
+
+    /// Lower a while loop
+    fn lower_while(&mut self, condition: ExprId, body_id: u32, ast: &Ast) {
+        eprintln!("[MIR] Lowering while loop");
+
+        // Create blocks for header, body, and exit
+        let header_bb = self.builder.new_block();
+        let body_bb = self.builder.new_block();
+        let exit_bb = self.builder.new_block();
+
+        // Jump to header
+        self.builder.build_jump(header_bb, Span::dummy());
+
+        // Header: evaluate condition and branch
+        self.builder.set_block(header_bb);
+        let cond_op = self.lower_expr_real(condition, ast);
+        self.builder.build_branch(cond_op, body_bb, exit_bb, Span::dummy());
+
+        // Body: execute loop body and jump back to header
+        self.builder.set_block(body_bb);
+        if let Some(AstNode::Block(body)) = ast.arena.get(body_id) {
+            self.lower_block(body, ast);
+        }
+        if !self.builder.is_terminated() {
+            self.builder.build_jump(header_bb, Span::dummy());
+        }
+
+        // Continue in exit block
+        self.builder.set_block(exit_bb);
     }
 }

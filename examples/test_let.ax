@@ -1,0 +1,6 @@
+fun main() {
+    println("Testing let binding:");
+    let x = 42;
+    println("Variable declared");
+    println("Done");
+}

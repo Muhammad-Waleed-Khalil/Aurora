@@ -1,0 +1,9 @@
+fun main() {
+    println("Testing if-else:");
+    if no {
+        println("Then branch");
+    } else {
+        println("Else branch executed");
+    }
+    println("Done");
+}

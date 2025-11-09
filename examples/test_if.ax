@@ -1,0 +1,7 @@
+fun main() {
+    println("Testing if statement:");
+    if yes {
+        println("Condition is true!");
+    }
+    println("After if");
+}
