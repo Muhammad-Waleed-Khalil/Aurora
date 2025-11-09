@@ -1,0 +1,21 @@
+fun main() {
+    let x = 10;
+    let y = 5;
+    let active = yes;
+    let inactive = no;
+
+    // Word-based operators
+    if x > y and y > 0 {
+        println("Both conditions are true");
+    }
+
+    if active or inactive {
+        println("At least one is true");
+    }
+
+    if not inactive {
+        println("inactive is false");
+    }
+
+    ret 0;
+}

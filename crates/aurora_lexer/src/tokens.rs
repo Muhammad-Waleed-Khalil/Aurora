@@ -16,6 +16,7 @@ pub enum TokenKind {
     // Keywords (control flow)
     If,
     Else,
+    Elif,       // elif (simplified syntax)
     Match,
     For,
     While,
@@ -23,12 +24,15 @@ pub enum TokenKind {
     Break,
     Continue,
     Return,
+    Ret,        // ret (simplified syntax)
     Yield,
 
     // Keywords (declarations)
     Fn,
+    Fun,        // fun (simplified syntax)
     Let,
     Mut,
+    Var,        // var (simplified syntax)
     Const,
     Static,
     Type,
@@ -36,6 +40,9 @@ pub enum TokenKind {
     Impl,
     Where,
     In,
+
+    // Keywords (special statements)
+    Print,      // print statement (simplified syntax)
 
     // Keywords (modules and visibility)
     Use,
@@ -61,6 +68,8 @@ pub enum TokenKind {
     // Literals (boolean)
     True,
     False,
+    Yes,        // yes (simplified syntax)
+    No,         // no (simplified syntax)
 
     // Primitive types
     I8,
@@ -119,6 +128,11 @@ pub enum TokenKind {
     AndAnd,     // &&
     OrOr,       // ||
     Not,        // !
+
+    // Operators (logical word-based - simplified syntax)
+    AndKeyword, // and
+    OrKeyword,  // or
+    NotKeyword, // not
 
     // Operators (bitwise)
     And,        // &

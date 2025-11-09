@@ -57,8 +57,8 @@ impl Parser {
     fn parse_let_stmt(&mut self, start: aurora_ast::Span) -> ParseResult<u32> {
         self.expect(TokenKind::Let, "Expected 'let'")?;
         
-        // Check for 'mut'
-        let mutable = if self.check(&TokenKind::Mut) {
+        // Check for 'mut' or 'var' (simplified syntax)
+        let mutable = if self.check(&TokenKind::Mut) || self.check(&TokenKind::Var) {
             self.advance();
             true
         } else {

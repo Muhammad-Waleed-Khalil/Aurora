@@ -83,7 +83,7 @@ impl Parser {
             // Reference types
             TokenKind::And => {
                 self.advance();
-                let is_mut = if self.check(&TokenKind::Mut) {
+                let is_mut = if self.check(&TokenKind::Mut) || self.check(&TokenKind::Var) {
                     self.advance();
                     true
                 } else {
